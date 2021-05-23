@@ -16,7 +16,11 @@ impl Lexer {
         println!("{:?}", self.input);
     }
 
-    pub fn cur(&mut self) -> Option<&char> {
+    pub fn cur(&self) -> Option<&char> {
         self.input.get(self.pos)
+    }
+
+    pub fn next(&mut self) {
+        self.pos += 1;
     }
 }
