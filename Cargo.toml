@@ -1,5 +1,5 @@
 [package]
-name = "my-language"
+name = "my_language"
 version = "0.1.0"
 authors = ["kn-shimada <xianrendaotian012@gmial.com>"]
 edition = "2018"
