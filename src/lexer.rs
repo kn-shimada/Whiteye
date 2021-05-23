@@ -1,5 +1,3 @@
-use std::sync::mpsc::RecvTimeoutError;
-
 #[derive(Debug, Clone, PartialEq)]
 pub struct Lexer {
   pub input: Vec<char>,
@@ -18,7 +16,7 @@ impl Lexer {
         println!("{:?}", self.input);
     }
 
-    pub fn cur(&mut self) -> String {
+    pub fn cur(&mut self) -> Option<&char> {
         self.input.get(self.pos)
     }
 }
