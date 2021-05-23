@@ -3,7 +3,7 @@ pub enum TokenKind {
     Number(isize),
     Plus,
     Minus,
-    EOF,
+    Eof,
 }
 
 #[derive(Debug, Clone, PartialEq)]
