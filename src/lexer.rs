@@ -1,5 +1,6 @@
-use thiserror::Error;
 use crate::token::{Token, TokenKind};
+use anyhow::Result;
+use thiserror::Error;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Lexer {
@@ -15,62 +16,57 @@ impl Lexer {
         }
     }
 
-    pub fn lex(&mut self) -> Result<Token, LexerError> {
-        if self.cur().is_some() && self.cur().unwrap().is_ascii_digit() {
+    pub fn lex(&mut self) -> Result<Token> {
+        if self.cur().is_ok() && self.cur().unwrap().is_ascii_digit() {
             let mut num_str = String::from("");
             num_str.push(*self.cur().unwrap());
-            self.next();
-            if self.cur().is_some() && self.cur().unwrap().is_ascii_digit(){
+            self.next()?;
+            if self.cur().is_ok() && self.cur().unwrap().is_ascii_digit() {
                 num_str.push(*self.cur().unwrap());
-                self.next();
-                return Ok(Token{
+                self.next()?;
+                return Ok(Token {
                     kind: TokenKind::Number(num_str.parse::<isize>().unwrap()),
                     raw_input: num_str,
                 });
             }
-            return Ok(Token{
+            return Ok(Token {
                 kind: TokenKind::Number(num_str.parse::<isize>().unwrap()),
                 raw_input: num_str,
-            })
+            });
         }
-        match self.cur() {
-            Some('+') => {
-                self.next();
-                Ok(Token{
+        match self.cur()? {
+            '+' => {
+                self.next()?;
+                Ok(Token {
                     kind: TokenKind::Plus,
                     raw_input: "+".to_string(),
                 })
-            },
-            Some('-') => {
-                self.next();
-                Ok(Token{
+            }
+            '-' => {
+                self.next()?;
+                Ok(Token {
                     kind: TokenKind::Minus,
                     raw_input: "-".to_string(),
                 })
-            },
-            None => {
-                self.next();
-                Ok(Token{
-                    kind: TokenKind::Eof,
-                    raw_input: "".to_string()
-                })
-            },
-            _ => {
-                return Err(LexerError::UnexpectedCharacterError(*self.cur().unwrap()))
             }
+            _ => Err(LexerError::UnexpectedCharacterError(*self.cur().unwrap()))?,
         }
     }
 
-    fn cur(&self) -> Option<&char> {
-        self.input.get(self.pos)
+    fn cur(&self) -> Result<&char> {
+        let raw_char = self.input.get(self.pos);
+        if raw_char.is_none() {
+            Err(LexerError::InvalidPosition(self.pos))?;
+        }
+        Ok(raw_char.unwrap())
     }
 
-    fn _peek(&self) -> Option<&char> {
-        self.input.get(self.pos + 1)
-    }
-
-    fn next(&mut self) {
+    fn next(&mut self) -> Result<()> {
+        if self.pos + 1 > self.input.len() {
+            return Err(LexerError::MaximumPosition(self.pos))?;
+        }
         self.pos += 1;
+        Ok(())
     }
 }
 
@@ -78,4 +74,8 @@ impl Lexer {
 pub enum LexerError {
     #[error("Unexpected Character: {0}")]
     UnexpectedCharacterError(char),
+    #[error("Invalid position: {0}")]
+    InvalidPosition(usize),
+    #[error("The position is maximum: {0}")]
+    MaximumPosition(usize),
 }
