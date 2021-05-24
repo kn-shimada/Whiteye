@@ -1,17 +1,18 @@
 use crate::ast::Expr;
 
-pub struct perser {
+pub struct Perser {
     pub lexer: Lexer,
     pub cur: Option<Token>,
-    pub peek: Option<Token> 
+    pub peek: Option<Token>,
 }
 
 impl parser {
-    pub fn new() {
-
-    }
-
-    pub fn next() {
-
+    pub fn new(mut lexer: Lexer) -> Self {
+        Self{
+            lexer: Lexer,
+            cur: lexer.lex(),
+            peek: lexer.lex(),
+        }
+        
     }
 }
