@@ -1,4 +1,6 @@
 use crate::ast::Expr;
+//lexerのuseの仕方が分からん
+
 
 pub struct Perser {
     pub lexer: Lexer,
@@ -13,6 +15,12 @@ impl parser {
             cur: lexer.lex(),
             peek: lexer.lex(),
         }
-        
+    }
+
+    pub fn next(&mut self)  -> Self {
+        Self{
+            cur: lexer.peek.clone(),
+            peek: lexer.lexer.lex(),
+        }
     }
 }
