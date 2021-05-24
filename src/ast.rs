@@ -2,12 +2,12 @@
 pub enum Expr {
     Number(isize),
 
-    PrefixExpr{
+    PrefixExpr {
         operator: String,
         right: Box<Expr>,
     },
 
-    InfixExpr{
+    InfixExpr {
         left: Box<Expr>,
         operator: String,
         right: Box<Expr>,
