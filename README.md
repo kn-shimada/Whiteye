@@ -10,6 +10,10 @@ while 条件 {
 &emsp;処理3,  
 &emsp;...  
 }  
+### 繰り返し（for）
+for 変数 in オブジェクト{  
+&emsp;処理  
+}  
 ### 条件分岐 (if、elif、else)
 if 条件 {  
 &emsp;処理  
