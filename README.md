@@ -1,7 +1,8 @@
 # Whiteye
 ## 由来
 競走馬のメジロマックイーンやメジロライアンのメジロ（目白）から  
-White eye → Whitey
+White eye → Whiteye
+
 ## 構文
 ### 繰り返し（while）
 while (条件) {   
