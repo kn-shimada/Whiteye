@@ -1,8 +1,12 @@
 #[derive(Debug, Clone, PartialEq)]
 pub enum TokenKind {
-    Number(isize),
-    Plus,
-    Minus,
+    Number(isize), // 数値
+    Plus, // + 
+    Minus, // -
+    Asterisk, // *
+    Slash, // /
+    LParen, // (
+    RParen, // )
 }
 
 #[derive(Debug, Clone, PartialEq)]

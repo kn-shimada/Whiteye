@@ -49,6 +49,34 @@ impl Lexer {
                     raw_input: "-".to_string(),
                 })
             }
+            '*' => {
+                self.next()?;
+                Ok(Token {
+                    kind: TokenKind::Asterisk,
+                    raw_input: "*".to_string(),
+                })
+            }
+            '/' => {
+                self.next()?;
+                Ok(Token {
+                    kind: TokenKind::Slash,
+                    raw_input: "/".to_string(),
+                })
+            }
+            '(' => {
+                self.next()?;
+                Ok(Token {
+                    kind: TokenKind::LParen,
+                    raw_input: "(".to_string(),
+                })
+            }
+            ')' => {
+                self.next()?;
+                Ok(Token {
+                    kind: TokenKind::RParen,
+                    raw_input: ")".to_string(),
+                })
+            }
             _ => Err(LexerError::UnexpectedCharacterError(*self.cur().unwrap()))?,
         }
     }
