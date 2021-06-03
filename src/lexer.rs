@@ -5,7 +5,7 @@ use thiserror::Error;
 #[derive(Debug, Clone, PartialEq)]
 pub struct Lexer {
     pub input: Vec<char>, //解析する文字列の取得
-    pub pos: usize, //解析しているインデックス番号
+    pub pos: usize,       //解析しているインデックス番号
 }
 
 impl Lexer {
@@ -26,7 +26,7 @@ impl Lexer {
         //数値の取得
         if self.cur().is_ok() && self.cur().unwrap().is_ascii_digit() {
             let mut num_str = String::from("");
-            while self.cur().is_ok() && self.cur().unwrap().is_ascii_digit(){
+            while self.cur().is_ok() && self.cur().unwrap().is_ascii_digit() {
                 num_str.push(*self.cur().unwrap());
                 self.next()?;
             }
