@@ -17,6 +17,10 @@ impl Lexer {
     }
 
     pub fn lex(&mut self) -> Result<Token> {
+        while self.cur().is_ok() && self.cur().unwrap().is_whitespace() {
+            self.next()?;
+        }
+
         if self.cur().is_ok() && self.cur().unwrap().is_ascii_digit() {
             let mut num_str = String::from("");
             while self.cur().is_ok() && self.cur().unwrap().is_ascii_digit(){
@@ -28,6 +32,7 @@ impl Lexer {
                 raw_input: num_str,
             });
         }
+
         match self.cur()? {
             '+' => {
                 self.next()?;
