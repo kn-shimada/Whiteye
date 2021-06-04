@@ -19,15 +19,9 @@ impl Lexer {
     pub fn lex(&mut self) -> Result<Token> {
         if self.cur().is_ok() && self.cur().unwrap().is_ascii_digit() {
             let mut num_str = String::from("");
-            num_str.push(*self.cur().unwrap());
-            self.next()?;
-            if self.cur().is_ok() && self.cur().unwrap().is_ascii_digit() {
+            while self.cur().is_ok() && self.cur().unwrap().is_ascii_digit(){
                 num_str.push(*self.cur().unwrap());
                 self.next()?;
-                return Ok(Token {
-                    kind: TokenKind::Number(num_str.parse::<isize>().unwrap()),
-                    raw_input: num_str,
-                });
             }
             return Ok(Token {
                 kind: TokenKind::Number(num_str.parse::<isize>().unwrap()),
