@@ -11,6 +11,6 @@ pub enum TokenKind {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Token {
-    pub kind: TokenKind,
-    pub raw_input: String,
+    pub kind: TokenKind, //データの種類
+    pub raw_input: String, //生のデータ
 }

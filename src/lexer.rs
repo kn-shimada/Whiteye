@@ -4,11 +4,12 @@ use thiserror::Error;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Lexer {
-    pub input: Vec<char>,
-    pub pos: usize,
+    pub input: Vec<char>, //解析する文字列の取得
+    pub pos: usize, //解析しているインデックス番号
 }
 
 impl Lexer {
+    //初期化
     pub fn new(input: &str) -> Self {
         Self {
             input: input.chars().collect(),
@@ -17,10 +18,12 @@ impl Lexer {
     }
 
     pub fn lex(&mut self) -> Result<Token> {
+        //空白をスキップ
         while self.cur().is_ok() && self.cur().unwrap().is_whitespace() {
             self.next()?;
         }
 
+        //数値の取得
         if self.cur().is_ok() && self.cur().unwrap().is_ascii_digit() {
             let mut num_str = String::from("");
             while self.cur().is_ok() && self.cur().unwrap().is_ascii_digit(){
@@ -33,6 +36,7 @@ impl Lexer {
             });
         }
 
+        //演算子の取得
         match self.cur()? {
             '+' => {
                 self.next()?;
@@ -80,6 +84,7 @@ impl Lexer {
         }
     }
 
+    //解析中の文字列
     fn cur(&self) -> Result<&char> {
         let raw_char = self.input.get(self.pos);
         if raw_char.is_none() {
@@ -88,6 +93,7 @@ impl Lexer {
         Ok(raw_char.unwrap())
     }
 
+    //解析するインデックスを進める
     fn next(&mut self) -> Result<()> {
         if self.pos + 1 > self.input.len() {
             return Err(LexerError::MaximumPosition(self.pos))?;
@@ -97,6 +103,7 @@ impl Lexer {
     }
 }
 
+//error処理
 #[derive(Debug, Error)]
 pub enum LexerError {
     #[error("Unexpected Character: {0}")]
