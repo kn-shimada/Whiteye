@@ -80,7 +80,7 @@ impl Lexer {
                     raw_input: ")".to_string(),
                 })
             }
-            _ => Err(LexerError::UnexpectedCharacterError(*self.cur().unwrap()))?,
+            _ => return Err(LexerError::UnexpectedCharacterError(*self.cur().unwrap()).into()),
         }
     }
 
@@ -88,7 +88,7 @@ impl Lexer {
     fn cur(&self) -> Result<&char> {
         let raw_char = self.input.get(self.pos);
         if raw_char.is_none() {
-            Err(LexerError::InvalidPosition(self.pos))?;
+            return Err(LexerError::InvalidPosition(self.pos).into());
         }
         Ok(raw_char.unwrap())
     }
@@ -96,7 +96,7 @@ impl Lexer {
     //解析するインデックスを進める
     fn next(&mut self) -> Result<()> {
         if self.pos + 1 > self.input.len() {
-            return Err(LexerError::MaximumPosition(self.pos))?;
+            return Err(LexerError::MaximumPosition(self.pos).into());
         }
         self.pos += 1;
         Ok(())
