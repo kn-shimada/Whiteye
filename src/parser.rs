@@ -8,12 +8,31 @@ pub struct Perser {
     pub peek: Option<Token>,
 }
 
+// 優先度
+#[derive(PartialOrd, PartialEq)]
+enum Precedence {
+    // 最低
+    LOWEST,
+    // "+", "-"
+    SUM,
+    // 前置演算子
+    PREFIX,
+}
+
 impl parser {
     pub fn new(mut lexer: Lexer) -> Self {
         Self{
             lexer: Lexer,
             cur: lexer.lex(),
             peek: lexer.lex(),
+        }
+    }
+
+    // 優先度の定義
+    fn token_precedence(token: &Token) -> Precedence {
+        match token {
+            Token::Plus | Token::Minus => Precedence::SUM,
+            _ => Precedence::LOWEST,
         }
     }
 
