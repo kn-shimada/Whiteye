@@ -1,16 +1,10 @@
 #[derive(Debug, Clone, PartialEq)]
-pub enum Expr {
+pub enum Ast {
     Number(isize),
 
-    //例: -10
-    PrefixExpr {
-        operator: String,
-        right: Box<Expr>,
-    },
-
     //例: 1 + 2
-    InfixExpr {
-        left: Box<Expr>,
+    Expr {
+        left: Box<Ast>,
         operator: String,
         right: Box<Expr>,
     },
