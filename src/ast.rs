@@ -3,7 +3,7 @@ pub enum OpKind {
     Add,
     Sub,
     Mul,
-    Div
+    Div,
 }
 
 #[derive(Debug, PartialEq)]
@@ -17,5 +17,3 @@ pub enum Ast {
         right: Box<Ast>,
     },
 }
-
-
