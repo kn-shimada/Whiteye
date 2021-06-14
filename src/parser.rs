@@ -18,4 +18,10 @@ impl<'a> Parser<'a> {
             lexer,
         })
     }
+
+    pub fn next_token(&mut self) -> Result<()> {
+        self.cur = self.peek.clone();
+        self.peek = self.lexer.lex()?;
+        Ok(())
+    }
 }
