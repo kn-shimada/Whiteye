@@ -1,3 +1,6 @@
+use nom::character::complete::digit1;
+use nom::IResult;
+
 pub struct Parser {}
 
 impl Parser {
