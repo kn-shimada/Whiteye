@@ -13,17 +13,19 @@ pub enum Ast {
     Expr {
         operator: OpKind,
         left: Box<Ast>,
-        
         right: Box<Ast>,
     },
 }
 
 pub fn eval(a: Ast) -> isize {
     match a {
-        Ast::Expr{operator, left, right} => eval_expr(operator, *left, *right),
+        Ast::Expr {
+            operator,
+            left,
+            right,
+        } => eval_expr(operator, *left, *right),
         Ast::Number(n) => n,
     }
-    
 }
 
 pub fn eval_expr(operator: OpKind, left: Ast, right: Ast) -> isize {
