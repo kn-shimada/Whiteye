@@ -1,14 +1,31 @@
-use anyhow::Result;
 use nom::character::complete::{digit1, one_of};
+use nom::branch::alt;
+use nom::error::VerboseError;
+use nom::combinator::{map_res, map};
+use nom::sequence::preceded;
+use nom::bytes::complete::tag;
 use nom::IResult;
-use crate::ast::{OpKind};
 
-pub fn parse(_input: &str) -> Result<()> {
-    Ok(())
+use crate::ast::{Ast, OpKind};
+
+fn parse(i: &str) -> IResult<&str, Ast, VerboseError<&str>> {
+    alt((parse_number, parse_expr))(i)
 }
 
-pub fn parse_operator(input: &str) -> IResult<&str, OpKind> {
-    let (i, t) = one_of("+-*/")(input)?;
+fn parse_expr(i: &str) -> IResult<&str, Ast, VerboseError<&str>> {
+    let (i, o) = parse_operator(i)?;
+    let (i, l) = parse_number(i)?;
+    let (i, r) = parse_number(i)?;
+    Ok((i,
+        Ast::Expr{
+            operator: o,
+            left: Box::new(l),
+            right: Box::new(r),
+        }))
+}
+
+fn parse_operator(i: &str) -> IResult<&str, OpKind, VerboseError<&str>> {
+    let (i, t) = one_of("+-*/")(i)?;
     Ok((
         i,
         match t {
@@ -21,8 +38,8 @@ pub fn parse_operator(input: &str) -> IResult<&str, OpKind> {
     ))
 }
 
-pub fn parse_number(input: &str) -> IResult<&str, isize> {
-    let (no_used, value_s) = digit1(input)?;
+fn parse_number(i: &str) -> IResult<&str, Ast, VerboseError<&str>> {
+    let (i, value_s) = digit1(i)?;
     let value = value_s.parse::<isize>().unwrap();
-    Ok((no_used, value))
+    Ok((i, Ast::Number(value)))
 }
