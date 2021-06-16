@@ -10,9 +10,9 @@ pub fn parse(i: &str) -> IResult<&str, Ast, VerboseError<&str>> {
 }
 
 fn parse_expr(i: &str) -> IResult<&str, Ast, VerboseError<&str>> {
+    let (i, l) = parse(i)?;
     let (i, o) = parse_operator(i)?;
-    let (i, l) = parse_number(i)?;
-    let (i, r) = parse_number(i)?;
+    let (i, r) = parse(i)?;
     Ok((i,
         Ast::Expr{
             operator: o,
