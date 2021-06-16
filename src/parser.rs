@@ -1,14 +1,11 @@
 use nom::character::complete::{digit1, one_of};
 use nom::branch::alt;
 use nom::error::VerboseError;
-use nom::combinator::{map_res, map};
-use nom::sequence::preceded;
-use nom::bytes::complete::tag;
 use nom::IResult;
 
 use crate::ast::{Ast, OpKind};
 
-fn parse(i: &str) -> IResult<&str, Ast, VerboseError<&str>> {
+pub fn parse(i: &str) -> IResult<&str, Ast, VerboseError<&str>> {
     alt((parse_number, parse_expr))(i)
 }
 
