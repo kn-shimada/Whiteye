@@ -11,8 +11,8 @@ pub enum Ast {
     Number(isize),
     //例: 1 + 2
     Expr {
-        operator: OpKind,
         left: Box<Ast>,
+        operator: OpKind,
         right: Box<Ast>,
     },
 }
