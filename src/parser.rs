@@ -13,13 +13,8 @@ pub fn parse(i: &str) -> IResult<&str, Ast, VerboseError<&str>> {
 }
 
 fn parse_expr(i: &str, a: Ast) -> IResult<&str, Ast, VerboseError<&str>> {
-    let l;
-    if a == (Ast::Expr{isize, OpKind, isize}) | Ast::Number(isize) {
-        let i = i;
-        l = a; 
-    } else {
-        let (i, l) = parse_number(i)?;
-    }
+    let i = i;
+    let l = a;
     let (i, o) = parse_operator(i)?;
     let (i, r) = parse_number(i)?;
     Ok((i,
