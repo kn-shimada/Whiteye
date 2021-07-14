@@ -1,22 +1,21 @@
 use nom::character::complete::{digit1, one_of};
 use nom::error::VerboseError;
+use nom::branch::alt;
 use nom::IResult;
 
 use crate::ast::{Ast, OpKind};
 
 pub fn parse(i: &str) -> IResult<&str, Ast, VerboseError<&str>> {
-    let (i, a) = parse_number(i)?;
     while i != "" {
-        parse_expr(i, a);
+        let (i, a) = alt((parse_expr, parse_number))(i)?;
     }
     Ok((i, a))
 }
 
-fn parse_expr(i: &str, a: Ast) -> IResult<&str, Ast, VerboseError<&str>> {
-    let i = i;
-    let l = a;
+fn parse_expr(i: &str) -> IResult<&str, Ast, VerboseError<&str>> {
+    let (i, l) = parse_number(i)?;
     let (i, o) = parse_operator(i)?;
-    let (i, r) = parse_number(i)?;
+    let (i, r) = alt((parse_expr, parse_number))(i)?;
     Ok((i,
         Ast::Expr{
             left: Box::new(l),
