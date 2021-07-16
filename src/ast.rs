@@ -4,6 +4,7 @@ pub enum OpKind {
     Sub,
     Mul,
     Div,
+    Exp,
 }
 
 #[derive(Debug, PartialEq)]
