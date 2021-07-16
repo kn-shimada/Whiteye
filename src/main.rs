@@ -2,6 +2,7 @@ use anyhow::Result;
 use std::fs;
 use std::process::exit;
 
+use whiteye::evaluator::evaluate;
 use whiteye::parser::parse;
 
 fn main() -> Result<()> {
@@ -12,7 +13,8 @@ fn main() -> Result<()> {
         eprintln!("parsing error, input remaining {:?}", input);
         exit(1);
     }
-
     println!("{:?}", parsed);
+    let result = evaluate(parsed);
+    println!("{:?}", result);
     Ok(())
 }
