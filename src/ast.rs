@@ -1,6 +1,6 @@
 #[derive(Debug, PartialEq)]
 pub enum OpKind {
-    SingleTermOp,
+    Unary,
     Add,
     Sub,
     Mul,
@@ -18,7 +18,7 @@ pub enum Ast {
         right: Box<Ast>,
     },
 
-    Term {
+    Monomial {
         operator: OpKind,
         right: Box<Ast>,
     }
