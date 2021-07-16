@@ -1,5 +1,6 @@
 #[derive(Debug, PartialEq)]
 pub enum OpKind {
+    SingleTermOp,
     Add,
     Sub,
     Mul,
@@ -16,4 +17,9 @@ pub enum Ast {
         operator: OpKind,
         right: Box<Ast>,
     },
+
+    Term {
+        operator: OpKind,
+        right: Box<Ast>,
+    }
 }
