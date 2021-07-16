@@ -1,3 +1,5 @@
+use std::convert::TryInto;
+
 use crate::ast::{Ast, OpKind};
 
 pub fn evaluate(expr: Ast) -> isize {
@@ -27,6 +29,6 @@ pub fn evaluate(expr: Ast) -> isize {
             left,
             operator: OpKind::Exp,
             right,
-        } => evaluate(*left).pow(evaluate(*right) as u32),
+        } => evaluate(*left).pow(evaluate(*right).try_into().unwrap()),
     }
 }
