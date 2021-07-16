@@ -1,37 +1,36 @@
 use nom::branch::alt;
 use nom::character::complete::{digit1, one_of};
-use nom::error::VerboseError;
 use nom::multi::many0;
 use nom::sequence::{delimited, tuple};
 use nom::IResult;
 
 use crate::ast::{Ast, OpKind};
 
-pub fn parse(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
+pub fn parse(input: &str) -> IResult<&str, Ast,> {
     parse_add_sub(input)
 }
 
-fn parse_par(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
+fn parse_par(input: &str) -> IResult<&str, Ast> {
     delimited(one_of("("), parse_add_sub, one_of(")"))(input)
 }
 
-fn parse_par_num(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
+fn parse_par_num(input: &str) -> IResult<&str, Ast> {
     alt((parse_par, parse_number))(input)
 }
 
-fn parse_exp(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
+fn parse_exp(input: &str) -> IResult<&str, Ast> {
     let (input, num_expr) = parse_par_num(input)?;
     let (input, exprs) = many0(tuple((one_of("^"), parse_exp)))(input)?;
     Ok((input, parse_expr(num_expr, exprs)))
 }
 
-fn parse_mul_div(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
+fn parse_mul_div(input: &str) -> IResult<&str, Ast> {
     let (input, num_expr) = parse_exp(input)?;
     let (input, exprs) = many0(tuple((one_of("*/"), parse_exp)))(input)?;
     Ok((input, parse_expr(num_expr, exprs)))
 }
 
-fn parse_add_sub(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
+fn parse_add_sub(input: &str) -> IResult<&str, Ast> {
     let (input, num_expr) = parse_mul_div(input)?;
     let (input, exprs) = many0(tuple((one_of("+-"), parse_mul_div)))(input)?;
     Ok((input, parse_expr(num_expr, exprs)))
@@ -56,7 +55,7 @@ fn parse_operator(op_char: char) -> OpKind {
     }
 }
 
-fn parse_number(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
+fn parse_number(input: &str) -> IResult<&str, Ast> {
     let (input, value_str) = digit1(input)?;
     let value = value_str.parse::<isize>().unwrap();
     Ok((input, Ast::Number(value)))
