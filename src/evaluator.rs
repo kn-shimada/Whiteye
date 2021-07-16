@@ -23,6 +23,10 @@ pub fn evaluate(expr: Ast) -> isize {
             operator: OpKind::Div,
             right,
         } => evaluate(*left) / evaluate(*right),
-        _ => panic!("Err"),
+        Ast::Expr {
+            left,
+            operator: OpKind::Exp,
+            right,
+        } => evaluate(*left).pow(evaluate(*right) as u32),
     }
 }
