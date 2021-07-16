@@ -9,6 +9,7 @@ pub enum OpKind {
 #[derive(Debug, PartialEq)]
 pub enum Ast {
     Number(isize),
+    
     Expr {
         left: Box<Ast>,
         operator: OpKind,
