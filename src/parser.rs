@@ -4,7 +4,7 @@ use nom::multi::many0;
 use nom::sequence::{delimited, tuple};
 use nom::IResult;
 
-use crate::ast::{Ast, OpKind};
+use crate::ast::{ExprOpKind, Ast};
 
 pub fn parse(input: &str) -> IResult<&str, Ast,> {
     parse_add_sub(input)
@@ -44,13 +44,13 @@ fn parse_expr(num_expr: Ast, exprs: Vec<(char, Ast)>) -> Ast {
     })
 }
 
-fn parse_operator(op_char: char) -> OpKind {
+fn parse_operator(op_char: char) -> ExprOpKind {
     match op_char {
-        '+' => OpKind::Add,
-        '-' => OpKind::Sub,
-        '*' => OpKind::Mul,
-        '/' => OpKind::Div,
-        '^' => OpKind::Exp,
+        '+' => ExprOpKind::EAdd,
+        '-' => ExprOpKind::ESub,
+        '*' => ExprOpKind::EMul,
+        '/' => ExprOpKind::EDiv,
+        '^' => ExprOpKind::EExp,
         _ => panic!("Unknown Operation"),
     }
 }
