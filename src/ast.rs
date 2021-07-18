@@ -1,10 +1,10 @@
 #[derive(Debug, PartialEq)]
-pub enum OpKind {
-    Add,
-    Sub,
-    Mul,
-    Div,
-    Exp,
+pub enum ExprOpKind {
+    EAdd,
+    ESub,
+    EMul,
+    EDiv,
+    EExp,
 }
 
 #[derive(Debug, PartialEq)]
@@ -19,12 +19,12 @@ pub enum Ast {
 
     Expr {
         left: Box<Ast>,
-        operator: OpKind,
+        operator: ExprOpKind,
         right: Box<Ast>,
     },
 
     Monomial {
-        operator: OpKind,
+        operator: UnaryOpKind,
         right: Box<Ast>,
     }
 }
