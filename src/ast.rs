@@ -1,11 +1,16 @@
 #[derive(Debug, PartialEq)]
 pub enum OpKind {
-    Unary,
     Add,
     Sub,
     Mul,
     Div,
     Exp,
+}
+
+#[derive(Debug, PartialEq)]
+pub enum UnaryOpKind {
+    UPuls,
+    UMinus,
 }
 
 #[derive(Debug, PartialEq)]
