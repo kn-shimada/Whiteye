@@ -7,14 +7,14 @@ use whiteye::parser::parse;
 
 fn main() -> Result<()> {
     let input = fs::read_to_string("program.txt").expect("Failed to read the file");
-    println!("{:?}", &input);
+    println!("Expr: {:?}", &input);
     let (input, parsed) = parse(&input).unwrap();
     if !input.is_empty() {
         eprintln!("parsing error, input remaining {:?}", input);
         exit(1);
     }
-    println!("{:?}", parsed);
+    println!("parsed: \n{:?}", parsed);
     let result = evaluate(parsed);
-    println!("{:?}", result);
+    println!("Result: {:?}", result);
     Ok(())
 }

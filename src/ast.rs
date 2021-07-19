@@ -9,7 +9,6 @@ pub enum ExprOpKind {
 
 #[derive(Debug, PartialEq)]
 pub enum UnaryOpKind {
-    UNone,
     UPuls,
     UMinus,
 }

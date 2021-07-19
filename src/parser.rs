@@ -27,7 +27,7 @@ fn parse_par_num(input: &str) -> IResult<&str, Ast> {
 fn parse_unary(input: &str) -> IResult<&str, Ast> {
     let (input, unary_op_chars) = many0(one_of("+-"))(input)?;
     let (input, expr) = parse_par_num(input)?;
-    Ok((input, parse_unaty_expr(unary_op_chars, expr)))
+    Ok((input, parse_monomial(unary_op_chars, expr)))
 } 
 
 fn parse_exp(input: &str) -> IResult<&str, Ast> {
@@ -56,7 +56,7 @@ fn parse_expr(num_expr: Ast, exprs: Vec<(char, Ast)>) -> Ast {
     })
 }
 
-fn parse_unaty_expr(unary_op_chars: Vec<char>, expr: Ast) -> Ast {
+fn parse_monomial(unary_op_chars: Vec<char>, expr: Ast) -> Ast {
     unary_op_chars.into_iter().fold(expr, |r_expr, unary_op_chars| Ast::Monomial {
         operator: parse_unary_operator(unary_op_chars),
         right: Box::new(r_expr),
