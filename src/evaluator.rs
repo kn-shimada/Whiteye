@@ -38,12 +38,12 @@ pub fn evaluate(expr: Ast) -> isize {
 
         Ast::Monomial {
             operator: UnaryOpKind::UPuls,
-            right,
-        } => evaluate(*right) * 1,
+            expr,
+        } => evaluate(*expr) * 1,
 
         Ast::Monomial {
             operator: UnaryOpKind::UMinus,
-            right,
-        } => evaluate(*right) * -1,
+            expr,
+        } => evaluate(*expr) * -1,
     }
 }

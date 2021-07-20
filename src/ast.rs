@@ -25,6 +25,6 @@ pub enum Ast {
 
     Monomial {
         operator: UnaryOpKind,
-        right: Box<Ast>,
+        expr: Box<Ast>,
     }
 }

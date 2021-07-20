@@ -57,9 +57,9 @@ fn parse_expr(num_expr: Ast, exprs: Vec<(char, Ast)>) -> Ast {
 }
 
 fn parse_monomial(unary_op_chars: Vec<char>, expr: Ast) -> Ast {
-    unary_op_chars.into_iter().fold(expr, |r_expr, unary_op_chars| Ast::Monomial {
+    unary_op_chars.into_iter().fold(expr, |expr, unary_op_chars| Ast::Monomial {
         operator: parse_unary_operator(unary_op_chars),
-        right: Box::new(r_expr),
+        expr: Box::new(expr),
     })
 }
 
