@@ -76,7 +76,7 @@ fn parse_expr_operator(expr_op_char: char) -> ExprOpKind {
 
 fn parse_unary_operator(unary_op_char: char) -> UnaryOpKind {
     match unary_op_char {
-        '+' => UnaryOpKind::UPuls,
+        '+' => UnaryOpKind::UPlus,
         '-' => UnaryOpKind::UMinus,
         _ => panic!("Unknown Operation"),
     }

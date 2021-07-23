@@ -37,7 +37,7 @@ pub fn evaluate(expr: Ast) -> isize {
         } => evaluate(*left).pow(evaluate(*right).try_into().unwrap()),
 
         Ast::Monomial {
-            operator: UnaryOpKind::UPuls,
+            operator: UnaryOpKind::UPlus,
             expr,
         } => evaluate(*expr),
 
