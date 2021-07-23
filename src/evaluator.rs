@@ -39,11 +39,11 @@ pub fn evaluate(expr: Ast) -> isize {
         Ast::Monomial {
             operator: UnaryOpKind::UPuls,
             expr,
-        } => evaluate(*expr) * 1,
+        } => evaluate(*expr),
 
         Ast::Monomial {
             operator: UnaryOpKind::UMinus,
             expr,
-        } => evaluate(*expr) * -1,
+        } => -evaluate(*expr),
     }
 }
