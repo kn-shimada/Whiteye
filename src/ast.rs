@@ -17,6 +17,8 @@ pub enum UnaryOpKind {
 pub enum Ast {
     Number(isize),
 
+    ValiableName(String),
+
     Expr {
         left: Box<Ast>,
         operator: ExprOpKind,
