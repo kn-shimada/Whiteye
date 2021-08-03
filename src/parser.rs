@@ -1,13 +1,54 @@
 use nom::branch::alt;
+use nom::bytes::complete::{is_a, tag, take_till};
 use nom::character::complete::{digit1, one_of};
 use nom::multi::many0;
 use nom::sequence::{delimited, tuple};
 use nom::IResult;
 
-use crate::ast::{Ast, ExprOpKind, UnaryOpKind};
+use crate::ast::{Ast, ExprOpKind, UnaryOpKind, AssignmentOpKind, Statements};
 
-pub fn parse(input: &str) -> IResult<&str, Ast,> {
-    parse_add_sub(input)
+pub fn parse(input: &str) -> IResult<&str, Ast> {
+    parse_statement(input)
+}
+
+fn parse_statement(input: &str) -> IResult<&str, Ast> {
+    let (input, statement_str) = take_till(|c| c == ' ')(input)?;
+    match statement_str {
+        "let" => parse_variable(input),
+        _ => parse_add_sub(input),
+    }
+}
+
+fn parse_variable(input: &str) -> IResult<&str, Ast> {
+    let (input, _) = tag(" ")(input)?;
+    let (input, v_name) = is_a("abcdefghijklmnopqrstuvwxyz_")(input)?;
+    let (input, v_operator) = parse_assignment_operator(input)?;
+    let (input, v_expr) = parse_add_sub(input)?;
+    Ok((
+        input,
+        Ast::Variable {
+            statement: Statements::Let,
+            name: v_name.to_string(),
+            operator: v_operator,
+            expr: Box::new(v_expr),
+        }
+    ))
+}
+
+fn parse_assignment_operator(input: &str) -> IResult<&str, AssignmentOpKind> {
+    let (input, as_op) = is_a("=+-*/")(input)?;
+    Ok((
+        input,
+        match as_op {
+            "=" => AssignmentOpKind::AEqual,
+            "+=" => AssignmentOpKind::AAdd,
+            "-=" => AssignmentOpKind::ESub,
+            "*=" => AssignmentOpKind::EMul,
+            "/=" => AssignmentOpKind::EMul,
+            "**=" => AssignmentOpKind::EExp,
+            _ => panic!("Unknown Assignment Operation")
+        },
+    ))
 }
 
 fn parse_number(input: &str) -> IResult<&str, Ast> {
