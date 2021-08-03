@@ -29,6 +29,11 @@ pub enum Statements {
 }
 
 #[derive(Debug, PartialEq)]
+pub enum VariableType {
+    Int,
+}
+
+#[derive(Debug, PartialEq)]
 pub enum Ast {
     Number(isize),
 
@@ -46,6 +51,7 @@ pub enum Ast {
     Variable {
         statement: Statements,
         name: String,
+        data_type: VariableType,
         operator: AssignmentOpKind,
         expr: Box<Ast>,
     }
