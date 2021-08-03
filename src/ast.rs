@@ -14,13 +14,18 @@ pub enum UnaryOpKind {
 }
 
 #[derive(Debug, PartialEq)]
-pub enum AssignmentOpKind{
+pub enum AssignmentOpKind {
     AEqual,
     AAdd,
     ESub,
     EMul,
     EDiv,
     EExp,
+}
+
+#[derive(Debug, PartialEq)]
+pub enum Statements {
+    Let,
 }
 
 #[derive(Debug, PartialEq)]
@@ -39,7 +44,7 @@ pub enum Ast {
     },
 
     Variable {
-        statement: String,
+        statement: Statements,
         name: String,
         operator: AssignmentOpKind,
         expr: Box<Ast>,
