@@ -5,34 +5,47 @@ use nom::multi::many0;
 use nom::sequence::{delimited, tuple};
 use nom::IResult;
 
-use crate::ast::{Ast, ExprOpKind, UnaryOpKind, AssignmentOpKind, Statements};
+use crate::ast::{AssignmentOpKind, Ast, ExprOpKind, Statements, UnaryOpKind, VariableType};
 
 pub fn parse(input: &str) -> IResult<&str, Ast> {
-    parse_statement(input)
+    alt((parse_add_sub, parse_statement))(input)
 }
 
 fn parse_statement(input: &str) -> IResult<&str, Ast> {
     let (input, statement_str) = take_till(|c| c == ' ')(input)?;
     match statement_str {
         "let" => parse_variable(input),
-        _ => parse_add_sub(input),
+        _ => panic!("Unknown statemant"),
     }
 }
 
 fn parse_variable(input: &str) -> IResult<&str, Ast> {
     let (input, _) = tag(" ")(input)?;
-    let (input, v_name) = is_a("abcdefghijklmnopqrstuvwxyz_")(input)?;
+    let (input, v_name) = take_till(|c| c == ':')(input)?;
+    let (input, _) = tag(":")(input)?;
+    let (input, v_type_str) = take_till(|c| c == ' ')(input)?;
+    let v_type = parse_variable_type(v_type_str);
+    let (input, _) = tag(" ")(input)?;
     let (input, v_operator) = parse_assignment_operator(input)?;
+    let (input, _) = tag(" ")(input)?;
     let (input, v_expr) = parse_add_sub(input)?;
     Ok((
         input,
         Ast::Variable {
             statement: Statements::Let,
             name: v_name.to_string(),
+            data_type: v_type,
             operator: v_operator,
             expr: Box::new(v_expr),
         }
     ))
+}
+
+fn parse_variable_type(v_type_str: &str) -> VariableType {
+    match v_type_str {
+        "int" => VariableType::Int,
+        _ => panic!("Unknown Variable type")
+    }
 }
 
 fn parse_assignment_operator(input: &str) -> IResult<&str, AssignmentOpKind> {
