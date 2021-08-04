@@ -24,7 +24,6 @@ fn parse_variable(input: &str) -> IResult<&str, Ast> {
     let (input, v_name) = take_till(|c| c == ':')(input)?;
     let (input, _) = tag(":")(input)?;
     let (input, v_type_str) = take_till(|c| c == ' ')(input)?;
-    let v_type = parse_variable_type(v_type_str);
     let (input, _) = tag(" ")(input)?;
     let (input, v_operator) = parse_assignment_operator(input)?;
     let (input, _) = tag(" ")(input)?;
@@ -34,7 +33,7 @@ fn parse_variable(input: &str) -> IResult<&str, Ast> {
         Ast::Variable {
             statement: Statements::Let,
             name: v_name.to_string(),
-            data_type: v_type,
+            data_type: parse_variable_type(v_type_str),
             operator: v_operator,
             expr: Box::new(v_expr),
         }
