@@ -1,5 +1,5 @@
 use nom::branch::alt;
-use nom::bytes::complete::{is_a, tag, take_until};
+use nom::bytes::complete::{is_a, tag};
 use nom::character::complete::{alphanumeric0, char, digit1, multispace0, one_of};
 use nom::multi::many0;
 use nom::sequence::{delimited, tuple};
@@ -16,7 +16,11 @@ fn parse_statement(input: &str) -> IResult<&str, Ast> {
 }
 
 fn parse_variable(input: &str) -> IResult<&str, Ast> {
-    let (input, v_name) = delimited(tag("let"), parse_variable_name, char(':'))(input)?;
+    let (input, v_name) = delimited(
+        tag("let"),
+        delimited(multispace0, parse_variable_name, multispace0),
+        char(':'),
+    )(input)?;
     let (input, v_type) = parse_variable_type(input)?;
     let (input, v_op) = parse_assignment_operator(input)?;
     let (input, _) = multispace0(input)?;
@@ -33,12 +37,7 @@ fn parse_variable(input: &str) -> IResult<&str, Ast> {
 }
 
 fn parse_variable_name(input: &str) -> IResult<&str, &str> {
-    let (input, pre_v_name) = take_until(":")(input)?;
-    let (remnant, v_name) = delimited(multispace0, alphanumeric0, multispace0)(pre_v_name)?;
-    match remnant {
-        "" => Ok((input, v_name)),
-        _ => panic!("Invalid variable name"),
-    }
+    is_a("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_")(input)
 }
 
 fn parse_variable_type(input: &str) -> IResult<&str, VariableType> {
