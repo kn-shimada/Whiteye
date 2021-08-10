@@ -1,50 +1,55 @@
 use nom::branch::alt;
-use nom::bytes::complete::{is_a, tag, take_till};
-use nom::character::complete::{digit1, one_of};
+use nom::bytes::complete::{is_a, tag, take_until};
+use nom::character::complete::{alphanumeric0, char, digit1, multispace0, one_of};
 use nom::multi::many0;
 use nom::sequence::{delimited, tuple};
 use nom::IResult;
 
-use crate::ast::{AssignmentOpKind, Ast, ExprOpKind, Statements, UnaryOpKind, VariableType};
+use crate::ast::{AssignmentOpKind, Ast, ExprOpKind, UnaryOpKind, VariableType};
 
 pub fn parse(input: &str) -> IResult<&str, Ast> {
     alt((parse_add_sub, parse_statement))(input)
 }
 
 fn parse_statement(input: &str) -> IResult<&str, Ast> {
-    let (input, statement_str) = take_till(|c| c == ' ')(input)?;
-    match statement_str {
-        "let" => parse_variable(input),
-        _ => panic!("Unknown statemant"),
-    }
+    parse_variable(input)
 }
 
 fn parse_variable(input: &str) -> IResult<&str, Ast> {
-    let (input, _) = tag(" ")(input)?;
-    let (input, v_name) = take_till(|c| c == ':')(input)?;
-    let (input, _) = tag(":")(input)?;
-    let (input, v_type_str) = take_till(|c| c == ' ')(input)?;
-    let (input, _) = tag(" ")(input)?;
-    let (input, v_operator) = parse_assignment_operator(input)?;
-    let (input, _) = tag(" ")(input)?;
+    let (input, v_name) = delimited(tag("let"), parse_variable_name, char(':'))(input)?;
+    let (input, v_type) = parse_variable_type(input)?;
+    let (input, v_op) = parse_assignment_operator(input)?;
+    let (input, _) = multispace0(input)?;
     let (input, v_expr) = parse_add_sub(input)?;
     Ok((
         input,
         Ast::Variable {
-            statement: Statements::Let,
             name: v_name.to_string(),
-            data_type: parse_variable_type(v_type_str),
-            operator: v_operator,
+            data_type: v_type,
+            operator: v_op,
             expr: Box::new(v_expr),
-        }
+        },
     ))
 }
 
-fn parse_variable_type(v_type_str: &str) -> VariableType {
-    match v_type_str {
-        "int" => VariableType::Int,
-        _ => panic!("Unknown Variable type")
+fn parse_variable_name(input: &str) -> IResult<&str, &str> {
+    let (input, pre_v_name) = take_until(":")(input)?;
+    let (remnant, v_name) = delimited(multispace0, alphanumeric0, multispace0)(pre_v_name)?;
+    match remnant {
+        "" => Ok((input, v_name)),
+        _ => panic!("Invalid variable name"),
     }
+}
+
+fn parse_variable_type(input: &str) -> IResult<&str, VariableType> {
+    let (input, v_type_str) = delimited(multispace0, alphanumeric0, multispace0)(input)?;
+    Ok((
+        input,
+        match v_type_str {
+            "int" => VariableType::Int,
+            _ => panic!("Unknown Variable type"),
+        },
+    ))
 }
 
 fn parse_assignment_operator(input: &str) -> IResult<&str, AssignmentOpKind> {
@@ -58,7 +63,7 @@ fn parse_assignment_operator(input: &str) -> IResult<&str, AssignmentOpKind> {
             "*=" => AssignmentOpKind::EMul,
             "/=" => AssignmentOpKind::EMul,
             "**=" => AssignmentOpKind::EExp,
-            _ => panic!("Unknown Assignment Operation")
+            _ => panic!("Unknown Assignment Operation"),
         },
     ))
 }
@@ -70,7 +75,11 @@ fn parse_number(input: &str) -> IResult<&str, Ast> {
 }
 
 fn parse_par(input: &str) -> IResult<&str, Ast> {
-    delimited(one_of("("), parse_add_sub, one_of(")"))(input)
+    delimited(
+        one_of("("),
+        delimited(multispace0, parse_add_sub, multispace0),
+        one_of(")"),
+    )(input)
 }
 
 fn parse_par_num(input: &str) -> IResult<&str, Ast> {
@@ -81,7 +90,7 @@ fn parse_unary(input: &str) -> IResult<&str, Ast> {
     let (input, unary_op_chars) = many0(one_of("+-"))(input)?;
     let (input, expr) = parse_par_num(input)?;
     Ok((input, parse_monomial(unary_op_chars, expr)))
-} 
+}
 
 fn parse_exp(input: &str) -> IResult<&str, Ast> {
     let (input, num_expr) = parse_unary(input)?;
@@ -110,10 +119,12 @@ fn parse_expr(num_expr: Ast, exprs: Vec<(char, Ast)>) -> Ast {
 }
 
 fn parse_monomial(unary_op_chars: Vec<char>, expr: Ast) -> Ast {
-    unary_op_chars.into_iter().fold(expr, |expr, unary_op_chars| Ast::Monomial {
-        operator: parse_unary_operator(unary_op_chars),
-        expr: Box::new(expr),
-    })
+    unary_op_chars
+        .into_iter()
+        .fold(expr, |expr, unary_op_chars| Ast::Monomial {
+            operator: parse_unary_operator(unary_op_chars),
+            expr: Box::new(expr),
+        })
 }
 
 fn parse_expr_operator(expr_op_char: char) -> ExprOpKind {

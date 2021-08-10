@@ -24,11 +24,6 @@ pub enum AssignmentOpKind {
 }
 
 #[derive(Debug, PartialEq)]
-pub enum Statements {
-    Let,
-}
-
-#[derive(Debug, PartialEq)]
 pub enum VariableType {
     Int,
 }
@@ -49,10 +44,9 @@ pub enum Ast {
     },
 
     Variable {
-        statement: Statements,
         name: String,
         data_type: VariableType,
         operator: AssignmentOpKind,
         expr: Box<Ast>,
-    }
+    },
 }
