@@ -1,4 +1,4 @@
 extern crate nom;
 pub mod ast;
-pub mod evaluator;
+pub mod machine;
 pub mod parser;
