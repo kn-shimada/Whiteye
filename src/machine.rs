@@ -1,10 +1,17 @@
+use std::collections::HashMap;
 use std::convert::TryInto;
 
-use crate::ast::{Ast, ExprOpKind, UnaryOpKind};
+use crate::ast::{AssignmentOpKind, Ast, ExprOpKind, UnaryOpKind, VariableType};
+
+#[derive(Debug)]
+pub enum Variable {
+    Int(isize),
+}
 
 #[derive(Debug, Default)]
 pub struct Machine {
-    pub current: isize,
+    pub current: Option<isize>,
+    pub variables: HashMap<String, Variable>,
 }
 
 impl Machine {
@@ -16,51 +23,71 @@ impl Machine {
         self.current = self.eval(expr);
     }
 
-    pub fn eval(&self, expr: Ast) -> isize {
+    pub fn eval(&mut self, expr: Ast) -> Option<isize> {
         match expr {
-            Ast::Number(num) => num,
+            Ast::Number(num) => Some(num),
 
             Ast::Expr {
                 left,
                 operator: ExprOpKind::EAdd,
                 right,
-            } => self.eval(*left) + self.eval(*right),
+            } => Some(self.eval(*left).unwrap() + self.eval(*right).unwrap()),
 
             Ast::Expr {
                 left,
                 operator: ExprOpKind::ESub,
                 right,
-            } => self.eval(*left) - self.eval(*right),
+            } => Some(self.eval(*left).unwrap() - self.eval(*right).unwrap()),
 
             Ast::Expr {
                 left,
                 operator: ExprOpKind::EMul,
                 right,
-            } => self.eval(*left) * self.eval(*right),
+            } => Some(self.eval(*left).unwrap() * self.eval(*right).unwrap()),
 
             Ast::Expr {
                 left,
                 operator: ExprOpKind::EDiv,
                 right,
-            } => self.eval(*left) / self.eval(*right),
+            } => Some(self.eval(*left).unwrap() / self.eval(*right).unwrap()),
 
             Ast::Expr {
                 left,
                 operator: ExprOpKind::EExp,
                 right,
-            } => self.eval(*left).pow(self.eval(*right).try_into().unwrap()),
+            } => Some(
+                self.eval(*left)
+                    .unwrap()
+                    .pow(self.eval(*right).unwrap().try_into().unwrap()),
+            ),
 
             Ast::Monomial {
                 operator: UnaryOpKind::UPlus,
                 expr,
-            } => self.eval(*expr),
+            } => Some(self.eval(*expr).unwrap()),
 
             Ast::Monomial {
                 operator: UnaryOpKind::UMinus,
                 expr,
-            } => -self.eval(*expr),
+            } => Some(-self.eval(*expr).unwrap()),
 
-            _ => todo!(),
+            Ast::Variable {
+                name,
+                data_type,
+                operator,
+                expr,
+            } => {
+                let variable = match data_type {
+                    VariableType::Int => Variable::Int(self.eval(*expr).unwrap()),
+                };
+
+                match operator {
+                    AssignmentOpKind::AEqual => self.variables.insert(name, variable),
+                    _ => todo!(),
+                };
+
+                None
+            }
         }
     }
 }

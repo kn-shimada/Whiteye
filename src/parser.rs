@@ -58,10 +58,10 @@ fn parse_assignment_operator(input: &str) -> IResult<&str, AssignmentOpKind> {
         match as_op {
             "=" => AssignmentOpKind::AEqual,
             "+=" => AssignmentOpKind::AAdd,
-            "-=" => AssignmentOpKind::ESub,
-            "*=" => AssignmentOpKind::EMul,
-            "/=" => AssignmentOpKind::EMul,
-            "**=" => AssignmentOpKind::EExp,
+            "-=" => AssignmentOpKind::ASub,
+            "*=" => AssignmentOpKind::AMul,
+            "/=" => AssignmentOpKind::AMul,
+            "**=" => AssignmentOpKind::AExp,
             _ => panic!("Unknown Assignment Operation"),
         },
     ))

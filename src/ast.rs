@@ -17,10 +17,10 @@ pub enum UnaryOpKind {
 pub enum AssignmentOpKind {
     AEqual,
     AAdd,
-    ESub,
-    EMul,
-    EDiv,
-    EExp,
+    ASub,
+    AMul,
+    ADiv,
+    AExp,
 }
 
 #[derive(Debug, PartialEq)]
