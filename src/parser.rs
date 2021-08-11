@@ -99,13 +99,17 @@ fn parse_par(input: &str) -> IResult<&str, Ast> {
     )(input)
 }
 
-fn parse_par_num(input: &str) -> IResult<&str, Ast> {
-    alt((parse_par, parse_number, parse_variable))(input)
+fn parse_par_num_variable(input: &str) -> IResult<&str, Ast> {
+    delimited(
+        multispace0,
+        alt((parse_par, parse_number, parse_variable)),
+        multispace0,
+    )(input)
 }
 
 fn parse_unary(input: &str) -> IResult<&str, Ast> {
     let (input, unary_op_chars) = many0(one_of("+-"))(input)?;
-    let (input, expr) = parse_par_num(input)?;
+    let (input, expr) = parse_par_num_variable(input)?;
     Ok((input, parse_monomial(unary_op_chars, expr)))
 }
 
