@@ -24,10 +24,8 @@ fn main() -> Result<()> {
         println!("AST: {:?}", parsed);
 
         machine.run(parsed);
-        println!("Current machine state: {:?}", machine);
+        println!("machine state: {:?}", machine);
     }
-
-    println!("Final: {:?}", machine);
 
     Ok(())
 }

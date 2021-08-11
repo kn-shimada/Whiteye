@@ -1,5 +1,5 @@
 use nom::branch::alt;
-use nom::bytes::complete::{is_a, tag, take_until};
+use nom::bytes::complete::{is_a, tag};
 use nom::character::complete::{alphanumeric0, char, digit1, multispace0, one_of};
 use nom::multi::many0;
 use nom::sequence::{delimited, tuple};
@@ -10,8 +10,8 @@ use crate::ast::{AssignmentOpKind, Ast, ExprOpKind, UnaryOpKind, VariableType};
 pub fn parse(input: &str) -> IResult<&str, Ast> {
     alt((
         parse_statement,
-        parse_function_call,
         parse_variable_assignment,
+        parse_function_call,
         parse_add_sub,
     ))(input)
 }
@@ -47,7 +47,7 @@ fn parse_assignment_operator(input: &str) -> IResult<&str, AssignmentOpKind> {
 }
 
 fn parse_function_call(input: &str) -> IResult<&str, Ast> {
-    let (input, f_name) = take_until("(")(input)?;
+    let (input, f_name) = is_a("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_")(input)?;
     let (input, f_argument) = delimited(char('('), parse_add_sub, char(')'))(input)?;
     Ok((
         input,
