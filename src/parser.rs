@@ -8,7 +8,7 @@ use nom::IResult;
 use crate::ast::{AssignmentOpKind, Ast, ExprOpKind, UnaryOpKind, VariableType};
 
 pub fn parse(input: &str) -> IResult<&str, Ast> {
-    alt((parse_add_sub, parse_statement, parse_function_call))(input)
+    alt((parse_statement, parse_function_call, parse_add_sub))(input)
 }
 
 fn parse_function_call(input: &str) -> IResult<&str, Ast> {
@@ -86,11 +86,9 @@ fn parse_number(input: &str) -> IResult<&str, Ast> {
 }
 
 fn parse_variable(input: &str) -> IResult<&str, Ast> {
-    let (input, v_name) = is_a("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_")(input)?;
-    Ok((
-        input,
-        Ast::Variable(v_name.into())
-    ))
+    let (input, v_name) =
+        is_a("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_")(input)?;
+    Ok((input, Ast::Variable(v_name.into())))
 }
 
 fn parse_par(input: &str) -> IResult<&str, Ast> {
