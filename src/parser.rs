@@ -5,10 +5,45 @@ use nom::multi::many0;
 use nom::sequence::{delimited, tuple};
 use nom::IResult;
 
-use crate::ast::{Ast, ExprOpKind, UnaryOpKind, VariableType};
+use crate::ast::{AssignmentOpKind, Ast, ExprOpKind, UnaryOpKind, VariableType};
 
 pub fn parse(input: &str) -> IResult<&str, Ast> {
-    alt((parse_statement, parse_function_call, parse_add_sub))(input)
+    alt((
+        parse_statement,
+        parse_function_call,
+        parse_variable_assignment,
+        parse_add_sub,
+    ))(input)
+}
+
+fn parse_variable_assignment(input: &str) -> IResult<&str, Ast> {
+    let (input, v_name) = parse_variable_name(input)?;
+    let (input, assignment_op) =
+        delimited(multispace0, parse_assignment_operator, multispace0)(input)?;
+    let (input, v_expr) = parse_add_sub(input)?;
+    Ok((
+        input,
+        Ast::VariableAssignment {
+            name: v_name.to_string(),
+            operator: assignment_op,
+            expr: Box::new(v_expr),
+        },
+    ))
+}
+
+fn parse_assignment_operator(input: &str) -> IResult<&str, AssignmentOpKind> {
+    let (input, as_op) = is_a("=+-*/")(input)?;
+    Ok((
+        input,
+        match as_op {
+            "=" => AssignmentOpKind::AEqual,
+            "+=" => AssignmentOpKind::AAdd,
+            "-=" => AssignmentOpKind::ASub,
+            "*=" => AssignmentOpKind::AMul,
+            "/=" => AssignmentOpKind::AMul,
+            _ => panic!("Unknown Assignment Operation"),
+        },
+    ))
 }
 
 fn parse_function_call(input: &str) -> IResult<&str, Ast> {
@@ -62,24 +97,6 @@ fn parse_variable_type(input: &str) -> IResult<&str, VariableType> {
     ))
 }
 
-/*
-fn parse_assignment_operator(input: &str) -> IResult<&str, AssignmentOpKind> {
-    // let (input, as_op) = is_a("=*-/")(input)?;
-    Ok((
-        input,
-        match as_op {
-            "=" => AssignmentOpKind::AEqual,
-            "+=" => AssignmentOpKind::AAdd,
-            "-=" => AssignmentOpKind::ASub,
-            "*=" => AssignmentOpKind::AMul,
-            "/=" => AssignmentOpKind::AMul,
-            "**=" => AssignmentOpKind::AExp,
-            _ => panic!("Unknown Assignment Operation"),
-        },
-    ))
-}
-*/
-
 fn parse_number(input: &str) -> IResult<&str, Ast> {
     let (input, value_str) = digit1(input)?;
     let value = value_str.parse::<isize>().unwrap();
@@ -87,8 +104,7 @@ fn parse_number(input: &str) -> IResult<&str, Ast> {
 }
 
 fn parse_variable(input: &str) -> IResult<&str, Ast> {
-    let (input, v_name) =
-        is_a("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_")(input)?;
+    let (input, v_name) = parse_variable_name(input)?;
     Ok((input, Ast::Variable(v_name.into())))
 }
 

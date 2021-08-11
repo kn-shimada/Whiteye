@@ -20,7 +20,6 @@ pub enum AssignmentOpKind {
     ASub,
     AMul,
     ADiv,
-    AExp,
 }
 
 #[derive(Debug, PartialEq)]
@@ -48,6 +47,12 @@ pub enum Ast {
     VariableDeclaration {
         name: String,
         data_type: VariableType,
+        expr: Box<Ast>,
+    },
+
+    VariableAssignment {
+        name: String,
+        operator: AssignmentOpKind,
         expr: Box<Ast>,
     },
 

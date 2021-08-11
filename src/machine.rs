@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::convert::TryInto;
 
-use crate::ast::{Ast, ExprOpKind, UnaryOpKind, VariableType};
+use crate::ast::{AssignmentOpKind, Ast, ExprOpKind, UnaryOpKind, VariableType};
 
 use crate::builtin_functions;
 
@@ -87,6 +87,30 @@ impl Machine {
                 };
 
                 self.variables.insert(name, variable);
+
+                None
+            }
+
+            Ast::VariableAssignment {
+                name,
+                operator,
+                expr,
+            } => {
+                let v_expr = self.eval(*expr).unwrap();
+                let Variable::Int(v_value) = self.variables.get(&name).unwrap();
+                let next_variable = match operator {
+                    AssignmentOpKind::AEqual => Variable::Int(v_expr),
+                    AssignmentOpKind::AAdd => Variable::Int(v_value + v_expr),
+                    AssignmentOpKind::ASub => Variable::Int(v_value - v_expr),
+                    AssignmentOpKind::AMul => Variable::Int(v_value * v_expr),
+                    AssignmentOpKind::ADiv => Variable::Int(v_value / v_expr),
+                };
+                match self.variables.get_mut(&name) {
+                    Some(v) => *v = next_variable,
+                    None => {
+                        panic!("Undefined variable");
+                    }
+                };
 
                 None
             }
