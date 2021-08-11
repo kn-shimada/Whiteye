@@ -48,7 +48,6 @@ pub enum Ast {
     VariableDeclaration {
         name: String,
         data_type: VariableType,
-        operator: AssignmentOpKind,
         expr: Box<Ast>,
     },
 

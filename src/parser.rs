@@ -5,7 +5,7 @@ use nom::multi::many0;
 use nom::sequence::{delimited, tuple};
 use nom::IResult;
 
-use crate::ast::{AssignmentOpKind, Ast, ExprOpKind, UnaryOpKind, VariableType};
+use crate::ast::{Ast, ExprOpKind, UnaryOpKind, VariableType};
 
 pub fn parse(input: &str) -> IResult<&str, Ast> {
     alt((parse_statement, parse_function_call, parse_add_sub))(input)
@@ -34,7 +34,7 @@ fn parse_variable_declaration(input: &str) -> IResult<&str, Ast> {
         char(':'),
     )(input)?;
     let (input, v_type) = parse_variable_type(input)?;
-    let (input, v_op) = parse_assignment_operator(input)?;
+    let (input, _) = char('=')(input)?;
     let (input, _) = multispace0(input)?;
     let (input, v_expr) = parse_add_sub(input)?;
     Ok((
@@ -42,7 +42,6 @@ fn parse_variable_declaration(input: &str) -> IResult<&str, Ast> {
         Ast::VariableDeclaration {
             name: v_name.to_string(),
             data_type: v_type,
-            operator: v_op,
             expr: Box::new(v_expr),
         },
     ))
@@ -63,8 +62,9 @@ fn parse_variable_type(input: &str) -> IResult<&str, VariableType> {
     ))
 }
 
+/*
 fn parse_assignment_operator(input: &str) -> IResult<&str, AssignmentOpKind> {
-    let (input, as_op) = is_a("=+-*/")(input)?;
+    // let (input, as_op) = is_a("=*-/")(input)?;
     Ok((
         input,
         match as_op {
@@ -78,6 +78,7 @@ fn parse_assignment_operator(input: &str) -> IResult<&str, AssignmentOpKind> {
         },
     ))
 }
+*/
 
 fn parse_number(input: &str) -> IResult<&str, Ast> {
     let (input, value_str) = digit1(input)?;

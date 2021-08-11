@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::convert::TryInto;
 
-use crate::ast::{AssignmentOpKind, Ast, ExprOpKind, UnaryOpKind, VariableType};
+use crate::ast::{Ast, ExprOpKind, UnaryOpKind, VariableType};
 
 use crate::builtin_functions;
 
@@ -80,17 +80,13 @@ impl Machine {
             Ast::VariableDeclaration {
                 name,
                 data_type,
-                operator,
                 expr,
             } => {
                 let variable = match data_type {
                     VariableType::Int => Variable::Int(self.eval(*expr).unwrap()),
                 };
 
-                match operator {
-                    AssignmentOpKind::AEqual => self.variables.insert(name, variable),
-                    _ => todo!(),
-                };
+                self.variables.insert(name, variable);
 
                 None
             }
