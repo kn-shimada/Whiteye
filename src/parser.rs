@@ -8,7 +8,23 @@ use nom::IResult;
 use crate::ast::{AssignmentOpKind, Ast, ExprOpKind, UnaryOpKind, VariableType};
 
 pub fn parse(input: &str) -> IResult<&str, Ast> {
-    alt((parse_add_sub, parse_statement))(input)
+    alt((parse_add_sub, parse_statement, parse_function_call))(input)
+}
+
+fn parse_function_call(input: &str) -> IResult<&str, Ast> {
+    parse_print(input)
+}
+
+fn parse_print(input: &str) -> IResult<&str, Ast> {
+    let (input, f_name) = tag("print")(input)?;
+    let (input, f_argument) = delimited(char('('), parse_add_sub, char(')'))(input)?;
+    Ok((
+        input, 
+        Ast::FunctionCall {
+            name:f_name.to_string(),
+            argument: Box::new(f_argument),
+        }
+    ))
 }
 
 fn parse_statement(input: &str) -> IResult<&str, Ast> {
