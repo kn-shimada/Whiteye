@@ -6,6 +6,10 @@
 
 White eye → Whiteye
 
+## ファイル拡張子
+
+.wh
+
 ## 構文 
 
 ### 出力
