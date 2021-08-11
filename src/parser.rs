@@ -24,10 +24,10 @@ fn parse_function_call(input: &str) -> IResult<&str, Ast> {
 }
 
 fn parse_statement(input: &str) -> IResult<&str, Ast> {
-    parse_variable(input)
+    parse_variable_declaration(input)
 }
 
-fn parse_variable(input: &str) -> IResult<&str, Ast> {
+fn parse_variable_declaration(input: &str) -> IResult<&str, Ast> {
     let (input, v_name) = delimited(
         tag("let"),
         delimited(multispace0, parse_variable_name, multispace0),
@@ -85,6 +85,14 @@ fn parse_number(input: &str) -> IResult<&str, Ast> {
     Ok((input, Ast::Number(value)))
 }
 
+fn parse_variable(input: &str) -> IResult<&str, Ast> {
+    let (input, v_name) = is_a("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_")(input)?;
+    Ok((
+        input,
+        Ast::Variable(v_name.into())
+    ))
+}
+
 fn parse_par(input: &str) -> IResult<&str, Ast> {
     delimited(
         one_of("("),
@@ -94,7 +102,7 @@ fn parse_par(input: &str) -> IResult<&str, Ast> {
 }
 
 fn parse_par_num(input: &str) -> IResult<&str, Ast> {
-    alt((parse_par, parse_number))(input)
+    alt((parse_par, parse_number, parse_variable))(input)
 }
 
 fn parse_unary(input: &str) -> IResult<&str, Ast> {
