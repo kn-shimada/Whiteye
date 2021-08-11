@@ -8,7 +8,7 @@ White eye → Whiteye
 
 ## ファイル拡張子
 
-.wh
+`.wy`
 
 ## 構文 
 
