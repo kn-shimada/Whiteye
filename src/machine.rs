@@ -3,6 +3,8 @@ use std::convert::TryInto;
 
 use crate::ast::{AssignmentOpKind, Ast, ExprOpKind, UnaryOpKind, VariableType};
 
+use crate::builtin_functions;
+
 #[derive(Debug)]
 pub enum Variable {
     Int(isize),
@@ -84,6 +86,15 @@ impl Machine {
                 match operator {
                     AssignmentOpKind::AEqual => self.variables.insert(name, variable),
                     _ => todo!(),
+                };
+
+                None
+            }
+
+            Ast::FunctionCall { name, argument } => {
+                match name.as_ref() {
+                    "print" => builtin_functions::print(self.eval(*argument).unwrap()),
+                    _ => panic!("Unknown Function name"),
                 };
 
                 None

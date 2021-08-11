@@ -49,4 +49,9 @@ pub enum Ast {
         operator: AssignmentOpKind,
         expr: Box<Ast>,
     },
+
+    FunctionCall {
+        name: String,
+        argument: Box<Ast>,
+    },
 }
