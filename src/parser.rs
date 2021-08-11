@@ -47,7 +47,8 @@ fn parse_assignment_operator(input: &str) -> IResult<&str, AssignmentOpKind> {
 }
 
 fn parse_function_call(input: &str) -> IResult<&str, Ast> {
-    let (input, f_name) = is_a("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_")(input)?;
+    let (input, f_name) =
+        is_a("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_")(input)?;
     let (input, f_argument) = delimited(char('('), parse_add_sub, char(')'))(input)?;
     Ok((
         input,
