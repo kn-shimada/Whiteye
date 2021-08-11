@@ -15,6 +15,7 @@ fn main() -> Result<()> {
 
     for line in reader.lines() {
         let line = line.unwrap();
+        println!("Raw: {}", line);
         let (input, parsed) = parse(&line).unwrap();
         if !input.is_empty() {
             eprintln!("parsing error, input remaining {:?}", input);
