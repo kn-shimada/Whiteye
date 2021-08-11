@@ -1,5 +1,5 @@
 use nom::branch::alt;
-use nom::bytes::complete::{is_a, tag};
+use nom::bytes::complete::{is_a, tag, take_until};
 use nom::character::complete::{alphanumeric0, char, digit1, multispace0, one_of};
 use nom::multi::many0;
 use nom::sequence::{delimited, tuple};
@@ -12,16 +12,12 @@ pub fn parse(input: &str) -> IResult<&str, Ast> {
 }
 
 fn parse_function_call(input: &str) -> IResult<&str, Ast> {
-    parse_print(input)
-}
-
-fn parse_print(input: &str) -> IResult<&str, Ast> {
-    let (input, f_name) = tag("print")(input)?;
+    let (input, f_name) = take_until("(")(input)?;
     let (input, f_argument) = delimited(char('('), parse_add_sub, char(')'))(input)?;
     Ok((
-        input, 
+        input,
         Ast::FunctionCall {
-            name:f_name.to_string(),
+            name: f_name.to_string(),
             argument: Box::new(f_argument),
         }
     ))
