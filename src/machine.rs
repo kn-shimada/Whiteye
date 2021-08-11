@@ -29,6 +29,10 @@ impl Machine {
         match expr {
             Ast::Number(num) => Some(num),
 
+            Ast::Variable(name) => match self.variables.get(&name).unwrap() {
+                Variable::Int(n) => Some(*n),
+            },
+
             Ast::Expr {
                 left,
                 operator: ExprOpKind::EAdd,
@@ -99,8 +103,6 @@ impl Machine {
 
                 None
             }
-
-            Ast::Variable(_) => todo!(),
         }
     }
 }
