@@ -19,7 +19,7 @@ fn parse_function_call(input: &str) -> IResult<&str, Ast> {
         Ast::FunctionCall {
             name: f_name.to_string(),
             argument: Box::new(f_argument),
-        }
+        },
     ))
 }
 
@@ -39,7 +39,7 @@ fn parse_variable(input: &str) -> IResult<&str, Ast> {
     let (input, v_expr) = parse_add_sub(input)?;
     Ok((
         input,
-        Ast::Variable {
+        Ast::VariableDeclaration {
             name: v_name.to_string(),
             data_type: v_type,
             operator: v_op,
@@ -58,7 +58,7 @@ fn parse_variable_type(input: &str) -> IResult<&str, VariableType> {
         input,
         match v_type_str {
             "int" => VariableType::Int,
-            _ => panic!("Unknown Variable type"),
+            _ => panic!("Unknown VariableDeclaration type"),
         },
     ))
 }

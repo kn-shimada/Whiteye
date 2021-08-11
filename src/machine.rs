@@ -73,7 +73,7 @@ impl Machine {
                 expr,
             } => Some(-self.eval(*expr).unwrap()),
 
-            Ast::Variable {
+            Ast::VariableDeclaration {
                 name,
                 data_type,
                 operator,
@@ -99,6 +99,8 @@ impl Machine {
 
                 None
             }
+
+            Ast::Variable(_) => todo!(),
         }
     }
 }

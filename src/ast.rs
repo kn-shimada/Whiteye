@@ -32,6 +32,8 @@ pub enum VariableType {
 pub enum Ast {
     Number(isize),
 
+    Variable(String),
+
     Expr {
         left: Box<Ast>,
         operator: ExprOpKind,
@@ -43,7 +45,7 @@ pub enum Ast {
         expr: Box<Ast>,
     },
 
-    Variable {
+    VariableDeclaration {
         name: String,
         data_type: VariableType,
         operator: AssignmentOpKind,
