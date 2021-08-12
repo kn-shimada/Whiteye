@@ -27,11 +27,11 @@ impl Machine {
                 data_type,
                 expr,
             } => {
-                let variable = match data_type {
+                let variable_value = match data_type {
                     VariableType::Int => Variable::Int(self.eval_math_expr(*expr)),
                 };
 
-                self.variables.insert(name, variable);
+                self.variables.insert(name, variable_value);
             }
 
             Ast::VariableAssignment {
@@ -39,17 +39,17 @@ impl Machine {
                 operator,
                 expr,
             } => {
-                let v_expr = self.eval_math_expr(*expr);
-                let Variable::Int(v_value) = self.variables.get(&name).unwrap();
-                let next_variable = match operator {
-                    AssignmentOpKind::AEqual => Variable::Int(v_expr),
-                    AssignmentOpKind::AAdd => Variable::Int(v_value + v_expr),
-                    AssignmentOpKind::ASub => Variable::Int(v_value - v_expr),
-                    AssignmentOpKind::AMul => Variable::Int(v_value * v_expr),
-                    AssignmentOpKind::ADiv => Variable::Int(v_value / v_expr),
+                let variable_expr = self.eval_math_expr(*expr);
+                let Variable::Int(variable_value) = self.variables.get(&name).unwrap();
+                let new_variable_value = match operator {
+                    AssignmentOpKind::AEqual => Variable::Int(variable_expr),
+                    AssignmentOpKind::AAdd => Variable::Int(variable_value + variable_expr),
+                    AssignmentOpKind::ASub => Variable::Int(variable_value - variable_expr),
+                    AssignmentOpKind::AMul => Variable::Int(variable_value * variable_expr),
+                    AssignmentOpKind::ADiv => Variable::Int(variable_value / variable_expr),
                 };
                 match self.variables.get_mut(&name) {
-                    Some(v) => *v = next_variable,
+                    Some(v) => *v = new_variable_value,
                     None => {
                         panic!("Undefined variable");
                     }
@@ -72,7 +72,7 @@ impl Machine {
             Ast::Number(num) => num,
 
             Ast::Variable(name) => match self.variables.get(&name).unwrap() {
-                Variable::Int(n) => *n,
+                Variable::Int(value) => *value,
             },
 
             Ast::Expr {
