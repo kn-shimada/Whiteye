@@ -8,14 +8,14 @@ use crate::ast::Ast;
 use super::expression::parse_add_sub;
 
 pub fn parse_function_call(input: &str) -> IResult<&str, Ast> {
-    let (input, f_name) =
+    let (input, function_name) =
         is_a("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_")(input)?;
-    let (input, f_argument) = delimited(char('('), parse_add_sub, char(')'))(input)?;
+    let (input, function_argument) = delimited(char('('), parse_add_sub, char(')'))(input)?;
     Ok((
         input,
         Ast::FunctionCall {
-            name: f_name.to_string(),
-            argument: Box::new(f_argument),
+            name: function_name.to_string(),
+            argument: Box::new(function_argument),
         },
     ))
 }
