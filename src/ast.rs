@@ -14,17 +14,17 @@ pub enum UnaryOpKind {
 }
 
 #[derive(Debug, PartialEq)]
+pub enum VariableType {
+    Int,
+}
+
+#[derive(Debug, PartialEq)]
 pub enum AssignmentOpKind {
     AEqual,
     AAdd,
     ASub,
     AMul,
     ADiv,
-}
-
-#[derive(Debug, PartialEq)]
-pub enum VariableType {
-    Int,
 }
 
 #[derive(Debug, PartialEq)]
