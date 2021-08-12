@@ -41,8 +41,6 @@ impl Machine {
             } => {
                 let v_expr = self.eval_math_expr(*expr);
                 let Variable::Int(v_value) = self.variables.get(&name).unwrap();
-                dbg!(&v_expr);
-                dbg!(v_value);
                 let next_variable = match operator {
                     AssignmentOpKind::AEqual => Variable::Int(v_expr),
                     AssignmentOpKind::AAdd => Variable::Int(v_value + v_expr),
