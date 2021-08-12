@@ -3,8 +3,8 @@ use nom::character::complete::{alphanumeric0, char, multispace0};
 use nom::sequence::delimited;
 use nom::IResult;
 
-use crate::ast::{Ast, VariableType, AssignmentOpKind};
 use super::expression::parse_add_sub;
+use crate::ast::{AssignmentOpKind, Ast, VariableType};
 
 pub fn parse_variable_assignment(input: &str) -> IResult<&str, Ast> {
     let (input, v_name) = parse_variable_name(input)?;

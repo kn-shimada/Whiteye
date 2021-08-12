@@ -4,8 +4,8 @@ use nom::multi::many0;
 use nom::sequence::{delimited, tuple};
 use nom::IResult;
 
-use crate::ast::{Ast, ExprOpKind, UnaryOpKind};
 use super::variable::parse_variable_name;
+use crate::ast::{Ast, ExprOpKind, UnaryOpKind};
 
 pub fn parse_add_sub(input: &str) -> IResult<&str, Ast> {
     let (input, num_expr) = parse_mul_div(input)?;
