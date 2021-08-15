@@ -1,10 +1,7 @@
 use anyhow::Result;
 use clap::{crate_description, crate_name, crate_version, App, Arg};
 use log::{debug, LevelFilter};
-use nom::error::convert_error;
-use nom::Finish;
-use std::fs::File;
-use std::io::{BufRead, BufReader};
+use std::fs;
 
 use whiteye::machine::Machine;
 use whiteye::parser::parse;
@@ -31,34 +28,26 @@ fn main() -> Result<()> {
     logger.init();
 
     if let Some(path) = matches.value_of("FILE") {
-        let f = File::open(path).unwrap();
-        let reader = BufReader::new(f);
+        let input = fs::read_to_string(path)?;
 
         let mut machine = Machine::new();
 
-        for line in reader.lines() {
-            let line = line.unwrap();
+        debug!("Raw: \n{}", input);
 
-            debug!("Raw: {}", line);
+        let parsed = parse(&input).unwrap_or_else(|e| panic!("{}", e));
+        debug!("AST: {:?}", parsed);
 
-            match parse(&line).finish() {
-                Ok((_, parsed)) => {
-                    debug!("AST: {:?}", parsed);
-
-                    machine.run(parsed);
-
-                    debug!("machine state: {:?}", machine);
-                }
-                Err(err) => panic!("{}", convert_error(line.as_ref(), err)),
-            };
-
-            /*
-            if !input.is_empty() {
-                eprintln!("parsing error, input remaining {:?}", input);
-                exit(1);
-            }
-            */
+        for ast in parsed {
+            machine.run(ast);
+            debug!("machine state: {:?}", machine);
         }
+
+        /*
+        if !input.is_empty() {
+            eprintln!("parsing error, input remaining {:?}", input);
+            exit(1);
+        }
+        */
     }
 
     Ok(())
