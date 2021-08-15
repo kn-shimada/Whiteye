@@ -1,5 +1,6 @@
 use nom::branch::alt;
 use nom::character::complete::{digit1, multispace0, one_of};
+use nom::error::VerboseError;
 use nom::multi::many0;
 use nom::sequence::{delimited, tuple};
 use nom::IResult;
@@ -7,19 +8,19 @@ use nom::IResult;
 use super::variable::parse_variable_name;
 use crate::ast::{Ast, ExprOpKind, UnaryOpKind};
 
-pub fn parse_add_sub(input: &str) -> IResult<&str, Ast> {
+pub fn parse_add_sub(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
     let (input, left_expr) = parse_mul_div(input)?;
     let (input, exprs) = many0(tuple((one_of("+-"), parse_mul_div)))(input)?;
     Ok((input, parse_expr(left_expr, exprs)))
 }
 
-fn parse_mul_div(input: &str) -> IResult<&str, Ast> {
+fn parse_mul_div(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
     let (input, left_expr) = parse_exp(input)?;
     let (input, exprs) = many0(tuple((one_of("*/"), parse_exp)))(input)?;
     Ok((input, parse_expr(left_expr, exprs)))
 }
 
-fn parse_exp(input: &str) -> IResult<&str, Ast> {
+fn parse_exp(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
     let (input, left_expr) = parse_unary(input)?;
     let (input, exprs) = many0(tuple((one_of("^"), parse_exp)))(input)?;
     Ok((input, parse_expr(left_expr, exprs)))
@@ -46,7 +47,7 @@ fn parse_expr_operator(expr_op_char: char) -> ExprOpKind {
     }
 }
 
-fn parse_unary(input: &str) -> IResult<&str, Ast> {
+fn parse_unary(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
     let (input, unary_op_chars) = many0(one_of("+-"))(input)?;
     let (input, expr) = parse_par_num_var(input)?;
     Ok((input, parse_monomial(unary_op_chars, expr)))
@@ -69,7 +70,7 @@ fn parse_unary_operator(unary_op_char: char) -> UnaryOpKind {
     }
 }
 
-fn parse_par_num_var(input: &str) -> IResult<&str, Ast> {
+fn parse_par_num_var(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
     delimited(
         multispace0,
         alt((parse_parentheses, parse_number, parse_variable)),
@@ -77,7 +78,7 @@ fn parse_par_num_var(input: &str) -> IResult<&str, Ast> {
     )(input)
 }
 
-fn parse_parentheses(input: &str) -> IResult<&str, Ast> {
+fn parse_parentheses(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
     delimited(
         one_of("("),
         delimited(multispace0, parse_add_sub, multispace0),
@@ -85,13 +86,13 @@ fn parse_parentheses(input: &str) -> IResult<&str, Ast> {
     )(input)
 }
 
-fn parse_number(input: &str) -> IResult<&str, Ast> {
+fn parse_number(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
     let (input, value_str) = digit1(input)?;
     let value = value_str.parse::<isize>().unwrap();
     Ok((input, Ast::Number(value)))
 }
 
-fn parse_variable(input: &str) -> IResult<&str, Ast> {
+fn parse_variable(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
     let (input, v_name) = parse_variable_name(input)?;
     Ok((input, Ast::Variable(v_name.into())))
 }

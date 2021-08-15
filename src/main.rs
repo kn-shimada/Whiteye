@@ -1,9 +1,10 @@
 use anyhow::Result;
 use clap::{crate_description, crate_name, crate_version, App, Arg};
 use log::{debug, LevelFilter};
+use nom::error::convert_error;
+use nom::Finish;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
-use std::process::exit;
 
 use whiteye::machine::Machine;
 use whiteye::parser::parse;
@@ -40,17 +41,23 @@ fn main() -> Result<()> {
 
             debug!("Raw: {}", line);
 
-            let (input, parsed) = parse(&line).unwrap();
+            match parse(&line).finish() {
+                Ok((_, parsed)) => {
+                    debug!("AST: {:?}", parsed);
+
+                    machine.run(parsed);
+
+                    debug!("machine state: {:?}", machine);
+                }
+                Err(err) => panic!("{}", convert_error(line.as_ref(), err)),
+            };
+
+            /*
             if !input.is_empty() {
                 eprintln!("parsing error, input remaining {:?}", input);
                 exit(1);
             }
-
-            debug!("AST: {:?}", parsed);
-
-            machine.run(parsed);
-
-            debug!("machine state: {:?}", machine);
+            */
         }
     }
 

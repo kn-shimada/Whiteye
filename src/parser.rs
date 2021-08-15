@@ -4,6 +4,7 @@ mod statement;
 mod variable;
 
 use nom::branch::alt;
+use nom::error::VerboseError;
 use nom::IResult;
 
 use crate::ast::Ast;
@@ -12,7 +13,7 @@ use function_call::parse_function_call;
 use statement::parse_statement;
 use variable::parse_variable_assignment;
 
-pub fn parse(input: &str) -> IResult<&str, Ast> {
+pub fn parse(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
     alt((
         parse_statement,
         parse_variable_assignment,
