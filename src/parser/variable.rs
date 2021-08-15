@@ -1,5 +1,5 @@
 use nom::bytes::complete::{is_a, tag};
-use nom::character::complete::{alphanumeric0, char, multispace0};
+use nom::character::complete::{alphanumeric0, multispace0};
 use nom::error::VerboseError;
 use nom::sequence::delimited;
 use nom::IResult;
@@ -11,10 +11,10 @@ pub fn parse_variable_declaration(input: &str) -> IResult<&str, Ast, VerboseErro
     let (input, variable_name) = delimited(
         tag("let"),
         delimited(multispace0, parse_variable_name, multispace0),
-        char(':'),
+        tag(":"),
     )(input)?;
     let (input, variable_type) = parse_variable_type(input)?;
-    let (input, _) = char('=')(input)?;
+    let (input, _) = tag("=")(input)?;
     let (input, _) = multispace0(input)?;
     let (input, variable_expr) = parse_add_sub(input)?;
     Ok((

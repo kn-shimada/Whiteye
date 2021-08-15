@@ -1,4 +1,5 @@
 use nom::branch::alt;
+use nom::bytes::complete::tag;
 use nom::character::complete::{digit1, multispace0, one_of};
 use nom::error::VerboseError;
 use nom::multi::many0;
@@ -80,9 +81,9 @@ fn parse_par_num_var(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
 
 fn parse_parentheses(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
     delimited(
-        one_of("("),
+        tag("("),
         delimited(multispace0, parse_add_sub, multispace0),
-        one_of(")"),
+        tag(")"),
     )(input)
 }
 
