@@ -43,7 +43,11 @@ pub fn parse_variable_assignment(input: &str) -> IResult<&str, Ast, VerboseError
 }
 
 pub fn parse_variable_name(input: &str) -> IResult<&str, &str, VerboseError<&str>> {
-    is_a("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_")(input)
+    let (input, variable_name) = is_a("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_")(input)?;
+    match is_a::<&str, &str, VerboseError<&str>>("1234567890")(variable_name) {
+        Ok((_, _)) => panic!("Invalid variable name"),
+        _ => Ok((input, variable_name)),
+    }
 }
 
 pub fn parse_variable_type(input: &str) -> IResult<&str, VariableType, VerboseError<&str>> {
