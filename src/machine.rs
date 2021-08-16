@@ -1,9 +1,20 @@
 use std::collections::HashMap;
 use std::convert::TryInto;
+use std::error::Error;
 
 use crate::ast::{AssignmentOpKind, Ast, ExprOpKind, UnaryOpKind, VariableType};
 
 use crate::builtin_functions;
+
+#[derive(Debug, thiserror::Error)]
+pub enum MachineError {
+    #[error("Variable Undefined: {0}")]
+    VariableUndefined(String),
+    #[error("Invalid Function Name: {0}")]
+    InvalidFunctionName(String),
+    #[error("Invalid Expression: {0}")]
+    InvalidExpression(String),
+}
 
 #[derive(Debug)]
 pub enum Variable {
@@ -20,7 +31,7 @@ impl Machine {
         Self::default()
     }
 
-    pub fn run(&mut self, expr: Ast) {
+    pub fn run(&mut self, expr: Ast) -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
         match expr {
             Ast::VariableDeclaration {
                 name,
@@ -32,6 +43,8 @@ impl Machine {
                 };
 
                 self.variables.insert(name, variable_value);
+
+                Ok(())
             }
 
             Ast::VariableAssignment {
@@ -40,7 +53,10 @@ impl Machine {
                 expr,
             } => {
                 let variable_expr = self.eval_math_expr(*expr);
-                let Variable::Int(variable_value) = self.variables.get(&name).unwrap();
+                let Variable::Int(variable_value) = match self.variables.get(&name) {
+                    Some(v) => v,
+                    None => return Err(MachineError::VariableUndefined(name).into()),
+                };
                 let new_variable_value = match operator {
                     AssignmentOpKind::AEqual => Variable::Int(variable_expr),
                     AssignmentOpKind::AAdd => Variable::Int(variable_value + variable_expr),
@@ -50,21 +66,26 @@ impl Machine {
                 };
                 match self.variables.get_mut(&name) {
                     Some(v) => *v = new_variable_value,
-                    None => {
-                        panic!("Undefined variable");
-                    }
+                    None => return Err(MachineError::VariableUndefined(name).into()),
                 };
+
+                Ok(())
             }
 
             Ast::FunctionCall { name, argument } => {
                 match name.as_ref() {
                     "print" => builtin_functions::print(self.eval_math_expr(*argument)),
-                    _ => panic!("Unknown Function name"),
+                    _ => return Err(MachineError::InvalidFunctionName(name).into()),
                 };
+
+                Ok(())
             }
 
-            _ => println!("{}", self.eval_math_expr(expr)),
-        };
+            _ => {
+                println!("{}", self.eval_math_expr(expr));
+                Ok(())
+            }
+        }
     }
 
     pub fn eval_math_expr(&mut self, expr: Ast) -> isize {

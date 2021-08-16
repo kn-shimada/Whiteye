@@ -38,7 +38,7 @@ fn main() -> Result<()> {
         debug!("AST: {:?}", parsed);
 
         for ast in parsed {
-            machine.run(ast);
+            machine.run(ast).unwrap_or_else(|e| panic!("{}", e));
             debug!("machine state: {:?}", machine);
         }
 
