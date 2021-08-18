@@ -4,7 +4,6 @@ pub enum ExprOpKind {
     ESub,
     EMul,
     EDiv,
-    EExp,
 }
 
 #[derive(Debug, PartialEq)]

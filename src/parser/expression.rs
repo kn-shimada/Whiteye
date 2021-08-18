@@ -16,14 +16,8 @@ pub fn parse_add_sub(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
 }
 
 fn parse_mul_div(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
-    let (input, left_expr) = parse_exp(input)?;
-    let (input, exprs) = many0(tuple((one_of("*/"), parse_exp)))(input)?;
-    Ok((input, parse_expr(left_expr, exprs)))
-}
-
-fn parse_exp(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
     let (input, left_expr) = parse_unary(input)?;
-    let (input, exprs) = many0(tuple((one_of("^"), parse_exp)))(input)?;
+    let (input, exprs) = many0(tuple((one_of("*/"), parse_mul_div)))(input)?;
     Ok((input, parse_expr(left_expr, exprs)))
 }
 
@@ -43,7 +37,6 @@ fn parse_expr_operator(expr_op_char: char) -> ExprOpKind {
         '-' => ExprOpKind::ESub,
         '*' => ExprOpKind::EMul,
         '/' => ExprOpKind::EDiv,
-        '^' => ExprOpKind::EExp,
         _ => panic!("Unknown Operation"),
     }
 }

@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::convert::TryInto;
 use std::error::Error;
 
 use crate::ast::{AssignmentOpKind, Ast, ExprOpKind, UnaryOpKind, VariableType};
@@ -119,14 +118,6 @@ impl Machine {
                 operator: ExprOpKind::EDiv,
                 right,
             } => self.eval_math_expr(*left) / self.eval_math_expr(*right),
-
-            Ast::Expr {
-                left,
-                operator: ExprOpKind::EExp,
-                right,
-            } => self
-                .eval_math_expr(*left)
-                .pow(self.eval_math_expr(*right).try_into().unwrap()),
 
             Ast::Monomial {
                 operator: UnaryOpKind::UPlus,
