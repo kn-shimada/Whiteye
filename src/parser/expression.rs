@@ -49,16 +49,16 @@ fn parse_expr_operator(expr_op_char: char) -> ExprOpKind {
 }
 
 fn parse_unary(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
-    let (input, unary_op_chars) = many0(one_of("+-"))(input)?;
+    let (input, unary_op_chars) = many0(tuple((space0, one_of("+-"))))(input)?;
     let (input, expr) = parse_par_num_var(input)?;
     Ok((input, parse_monomial(unary_op_chars, expr)))
 }
 
-fn parse_monomial(unary_op_chars: Vec<char>, expr: Ast) -> Ast {
+fn parse_monomial(unary_op_chars: Vec<(&str, char)>, expr: Ast) -> Ast {
     unary_op_chars
         .into_iter()
         .fold(expr, |expr, unary_op_char| Ast::Monomial {
-            operator: parse_unary_operator(unary_op_char),
+            operator: parse_unary_operator(unary_op_char.1),
             expr: Box::new(expr),
         })
 }
