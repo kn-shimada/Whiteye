@@ -1,6 +1,6 @@
 use nom::branch::alt;
 use nom::bytes::complete::tag;
-use nom::character::complete::{digit1, multispace0, one_of};
+use nom::character::complete::{digit1, one_of, space0};
 use nom::error::VerboseError;
 use nom::multi::many0;
 use nom::sequence::{delimited, tuple};
@@ -73,16 +73,16 @@ fn parse_unary_operator(unary_op_char: char) -> UnaryOpKind {
 
 fn parse_par_num_var(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
     delimited(
-        multispace0,
+        space0,
         alt((parse_parentheses, parse_number, parse_variable)),
-        multispace0,
+        space0,
     )(input)
 }
 
 fn parse_parentheses(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
     delimited(
         tag("("),
-        delimited(multispace0, parse_add_sub, multispace0),
+        delimited(space0, parse_add_sub, space0),
         tag(")"),
     )(input)
 }

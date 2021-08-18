@@ -1,11 +1,10 @@
 mod expression;
 mod function_call;
 mod statement;
-mod util;
 mod variable;
 
 use nom::branch::alt;
-use nom::combinator::opt;
+use nom::character::complete::multispace0;
 use nom::error::convert_error;
 use nom::error::VerboseError;
 use nom::sequence::delimited;
@@ -16,7 +15,6 @@ use crate::ast::Ast;
 use expression::parse_add_sub;
 use function_call::parse_function_call;
 use statement::parse_statement;
-use util::sp;
 use variable::parse_variable_assignment;
 
 pub fn parse(input: &str) -> Result<Vec<Ast>, String> {
@@ -40,13 +38,13 @@ pub fn parse(input: &str) -> Result<Vec<Ast>, String> {
 
 pub fn root_parser(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
     delimited(
-        opt(sp),
+        multispace0,
         alt((
             parse_statement,
             parse_variable_assignment,
             parse_function_call,
             parse_add_sub,
         )),
-        opt(sp),
+        multispace0,
     )(input)
 }
