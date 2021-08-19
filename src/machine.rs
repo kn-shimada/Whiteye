@@ -11,8 +11,6 @@ pub enum MachineError {
     VariableUndefined(String),
     #[error("Invalid Function Name: {0}")]
     InvalidFunctionName(String),
-    #[error("Invalid Expression: {0}")]
-    InvalidExpression(String),
 }
 
 #[derive(Debug)]
