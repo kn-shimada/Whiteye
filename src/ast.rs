@@ -1,3 +1,4 @@
+// 演算子
 #[derive(Debug, PartialEq)]
 pub enum ExprOpKind {
     EAdd,
@@ -6,17 +7,20 @@ pub enum ExprOpKind {
     EDiv,
 }
 
+// 単項演算子
 #[derive(Debug, PartialEq)]
 pub enum UnaryOpKind {
     UPlus,
     UMinus,
 }
 
+// 変数の型
 #[derive(Debug, PartialEq)]
 pub enum VariableType {
     Int,
 }
 
+// 代入演算子
 #[derive(Debug, PartialEq)]
 pub enum AssignmentOpKind {
     AEqual,
@@ -26,35 +30,41 @@ pub enum AssignmentOpKind {
     ADiv,
 }
 
+// 抽象構文木
 #[derive(Debug, PartialEq)]
 pub enum Ast {
-    Number(isize),
+    Number(isize),  //数値（整数）
 
-    Variable(String),
+    Variable(String),  // 変数
 
+    // 多項式
     Expr {
         left: Box<Ast>,
         operator: ExprOpKind,
         right: Box<Ast>,
     },
 
+    // 単項式
     Monomial {
         operator: UnaryOpKind,
         expr: Box<Ast>,
     },
 
+    // 変数宣言
     VariableDeclaration {
         name: String,
         data_type: VariableType,
         expr: Box<Ast>,
     },
 
+    // 変数への代入
     VariableAssignment {
         name: String,
         operator: AssignmentOpKind,
         expr: Box<Ast>,
     },
 
+    // 組み込み関数の呼び出し
     FunctionCall {
         name: String,
         argument: Box<Ast>,
