@@ -4,10 +4,11 @@ use nom::character::complete::{digit1, one_of, space0};
 use nom::error::VerboseError;
 use nom::multi::many0;
 use nom::sequence::{delimited, tuple};
+use nom::number::complete::float;
 use nom::IResult;
 
 use super::variable::parse_variable_name;
-use crate::ast::{Ast, ExprOpKind, UnaryOpKind};
+use crate::ast::{Ast, ExprOpKind, UnaryOpKind, Value};
 
 pub fn parse_add_sub(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
     let (input, left_expr) = parse_mul_div(input)?;
@@ -67,7 +68,7 @@ fn parse_unary_operator(unary_op_char: char) -> UnaryOpKind {
 fn parse_par_num_var(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
     delimited(
         space0,
-        alt((parse_parentheses, parse_number, parse_variable)),
+        alt((parse_parentheses, parse_integer, parse_variable)),
         space0,
     )(input)
 }
@@ -80,10 +81,15 @@ fn parse_parentheses(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
     )(input)
 }
 
-fn parse_number(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
+fn parse_integer(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
     let (input, value_str) = digit1(input)?;
     let value = value_str.parse::<isize>().unwrap();
-    Ok((input, Ast::Number(value)))
+    Ok((input, Ast::Literal(Value::Integer(value))))
+}
+
+fn parse_float(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
+    let (input, value) = float(input)?;
+    Ok((input, Ast::Literal(Value::Float(value))))
 }
 
 fn parse_variable(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
