@@ -41,7 +41,7 @@ pub enum AssignmentOpKind {
 // 抽象構文木
 #[derive(Debug, PartialEq)]
 pub enum Ast {
-    Value,  // 値
+    Literal(Value),  // 値
 
     Variable(String),  // 変数
 
