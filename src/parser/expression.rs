@@ -3,8 +3,8 @@ use nom::bytes::complete::tag;
 use nom::character::complete::{digit1, one_of, space0};
 use nom::error::VerboseError;
 use nom::multi::many0;
-use nom::sequence::{delimited, tuple};
 use nom::number::complete::float;
+use nom::sequence::{delimited, tuple};
 use nom::IResult;
 
 use super::variable::parse_variable_name;
@@ -44,7 +44,7 @@ fn parse_expr_operator(expr_op_char: char) -> ExprOpKind {
 
 fn parse_unary(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
     let (input, unary_op_chars) = many0(tuple((space0, one_of("+-"))))(input)?;
-    let (input, expr) = parse_par_num_var(input)?;
+    let (input, expr) = parse_par_float_int_var(input)?;
     Ok((input, parse_monomial(unary_op_chars, expr)))
 }
 
@@ -65,20 +65,21 @@ fn parse_unary_operator(unary_op_char: char) -> UnaryOpKind {
     }
 }
 
-fn parse_par_num_var(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
+fn parse_par_float_int_var(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
     delimited(
         space0,
-        alt((parse_parentheses, parse_integer, parse_variable)),
+        alt((
+            parse_parentheses,
+            parse_float,
+            parse_integer,
+            parse_variable,
+        )),
         space0,
     )(input)
 }
 
 fn parse_parentheses(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
-    delimited(
-        tag("("),
-        delimited(space0, parse_add_sub, space0),
-        tag(")"),
-    )(input)
+    delimited(tag("("), delimited(space0, parse_add_sub, space0), tag(")"))(input)
 }
 
 fn parse_integer(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
