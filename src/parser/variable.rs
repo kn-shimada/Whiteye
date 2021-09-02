@@ -57,7 +57,7 @@ pub fn parse_variable_type(input: &str) -> IResult<&str, VariableType, VerboseEr
     Ok((
         input,
         match variable_type_str {
-            "int" => VariableType::Int,
+            "int" => VariableType::Integer,
             _ => panic!("Unknown VariableDeclaration type"),
         },
     ))
