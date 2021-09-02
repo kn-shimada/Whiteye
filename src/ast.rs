@@ -1,3 +1,10 @@
+// 値
+#[derive(Debug, PartialEq)]
+pub enum Value {
+    Integer(isize),
+    Float(f32),
+}
+
 // 演算子
 #[derive(Debug, PartialEq)]
 pub enum ExprOpKind {
@@ -17,7 +24,8 @@ pub enum UnaryOpKind {
 // 変数の型
 #[derive(Debug, PartialEq)]
 pub enum VariableType {
-    Int,
+    Integer,
+    Float,
 }
 
 // 代入演算子
@@ -33,7 +41,7 @@ pub enum AssignmentOpKind {
 // 抽象構文木
 #[derive(Debug, PartialEq)]
 pub enum Ast {
-    Number(isize),  //数値（整数）
+    Value,  // 値
 
     Variable(String),  // 変数
 
