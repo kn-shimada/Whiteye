@@ -5,6 +5,12 @@ pub enum Value {
     Float(f32),
 }
 
+#[derive(Debug, PartialEq)]
+pub enum ValueType {
+    Integer,
+    Float,
+}
+
 // 演算子
 #[derive(Debug, PartialEq)]
 pub enum ExprOpKind {
@@ -21,13 +27,6 @@ pub enum UnaryOpKind {
     UMinus,
 }
 
-// 変数の型
-#[derive(Debug, PartialEq)]
-pub enum VariableType {
-    Integer,
-    Float,
-}
-
 // 代入演算子
 #[derive(Debug, PartialEq)]
 pub enum AssignmentOpKind {
@@ -41,9 +40,9 @@ pub enum AssignmentOpKind {
 // 抽象構文木
 #[derive(Debug, PartialEq)]
 pub enum Ast {
-    Literal(Value),  // 値
+    Literal(Value), // 値
 
-    Variable(String),  // 変数
+    Variable(String), // 変数
 
     // 多項式
     Expr {
@@ -61,7 +60,7 @@ pub enum Ast {
     // 変数宣言
     VariableDeclaration {
         name: String,
-        data_type: VariableType,
+        value_type: ValueType,
         expr: Box<Ast>,
     },
 
