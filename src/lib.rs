@@ -1,5 +1,6 @@
 pub mod ast;
-pub mod builtin_functions;
+pub mod backend;
+pub mod builtin_functions; // TODO: migrate to standard library
 pub mod machine;
 pub mod parser;
 pub mod value;

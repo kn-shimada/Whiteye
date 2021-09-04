@@ -1,8 +1,11 @@
 use anyhow::Result;
 use clap::{crate_description, crate_name, crate_version, App, Arg};
+use inkwell::context::Context;
 use log::{debug, LevelFilter};
 use std::fs;
+use whiteye::backend::llvm::LLVMBackend;
 
+use whiteye::ast::{Ast, Value};
 use whiteye::machine::Machine;
 use whiteye::parser::parse;
 
@@ -26,6 +29,13 @@ fn main() -> Result<()> {
     }
 
     logger.init();
+
+    let llvm_context = Context::create();
+    let llvm_backend = LLVMBackend::new(&llvm_context);
+    llvm_backend.run_jit(&[
+        Ast::Literal(Value::Integer(11)),
+        Ast::Literal(Value::Integer(12)),
+    ]);
 
     if let Some(path) = matches.value_of("FILE") {
         let input = fs::read_to_string(path)?;
