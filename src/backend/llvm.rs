@@ -42,10 +42,11 @@ impl<'ctx> LLVMBackend<'ctx> {
             .unwrap();
 
         unsafe {
-            execution_engine
-                .get_function::<unsafe extern "C" fn()>("main")
-                .unwrap()
-                .call();
+            let jit_fn = execution_engine
+                .get_function::<unsafe extern "C" fn() -> i64>("main")
+                .unwrap();
+
+            println!("Return: {}", jit_fn.call());
         };
     }
 
