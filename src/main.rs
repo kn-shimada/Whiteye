@@ -5,9 +5,10 @@ use log::{debug, LevelFilter};
 use std::fs;
 use whiteye::backend::llvm::LLVMBackend;
 
-use whiteye::ast::{Ast, Value};
+use whiteye::ast::Ast;
 use whiteye::machine::Machine;
 use whiteye::parser::parse;
+use whiteye::value::Value;
 
 fn main() -> Result<()> {
     let app = App::new(crate_name!())
@@ -31,11 +32,12 @@ fn main() -> Result<()> {
     logger.init();
 
     let llvm_context = Context::create();
-    let llvm_backend = LLVMBackend::new(&llvm_context);
-    llvm_backend.run_jit(&[
-        Ast::Literal(Value::Integer(11)),
-        Ast::Literal(Value::Integer(12)),
-    ]);
+    let mut llvm_backend = LLVMBackend::new(&llvm_context);
+    llvm_backend.run_jit(&[Ast::Expr {
+        left: Box::new(Ast::Literal(Value::Integer(11))),
+        operator: whiteye::ast::ExprOpKind::EAdd,
+        right: Box::new(Ast::Literal(Value::Integer(12))),
+    }]);
 
     if let Some(path) = matches.value_of("FILE") {
         let input = fs::read_to_string(path)?;
