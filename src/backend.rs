@@ -1,9 +1,7 @@
+pub(crate) mod backend_type;
 pub mod llvm;
 
-pub enum BackendType {
-    LLVM,
-    None,
-}
+pub use backend_type::{BackendType, BACKEND_TYPES};
 
 /*
 trait Backend {
