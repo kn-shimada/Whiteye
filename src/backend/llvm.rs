@@ -1,8 +1,9 @@
 use inkwell::builder::Builder;
 use inkwell::context::Context;
 use inkwell::module::Module;
-use inkwell::values::PointerValue;
-use inkwell::OptimizationLevel;
+use inkwell::types::{BasicType, FloatType, IntType, PointerType};
+use inkwell::values::{FunctionValue, PointerValue};
+use inkwell::{AddressSpace, OptimizationLevel};
 use log::info;
 use std::collections::HashMap;
 
@@ -11,10 +12,39 @@ use crate::backend::llvm::function_code_generator::FunctionCodeGenerator;
 
 mod function_code_generator;
 
+#[no_mangle]
+pub extern "C" fn print_float() -> i32 {
+    println!("a");
+    0
+}
+
+#[no_mangle]
+pub extern "C" fn print_integer(x: i64) -> i32 {
+    println!("{}", x.to_string());
+    0
+}
+
+#[used]
+static EXTERNAL_FNS: [extern "C" fn() -> i32; 1] = [print_float];
+
+pub struct LLVMTypes<'a> {
+    i8_type: IntType<'a>,
+    i32_type: IntType<'a>,
+    i64_type: IntType<'a>,
+    f64_type: FloatType<'a>,
+    i8_ptr_type: PointerType<'a>,
+}
+
+pub(crate) struct ExternFunctions<'a> {
+    printf: FunctionValue<'a>,
+}
+
 pub struct LLVMBackend<'ctx> {
     context: &'ctx Context,
     builder: Builder<'ctx>,
     module: Module<'ctx>,
+    ty: LLVMTypes<'ctx>,
+    fns: ExternFunctions<'ctx>,
 
     variables: HashMap<String, PointerValue<'ctx>>,
 }
@@ -25,10 +55,31 @@ impl<'ctx> LLVMBackend<'ctx> {
         let builder = context.create_builder();
         let variables = HashMap::new();
 
+        let ty = LLVMTypes {
+            i8_type: context.i8_type(),
+            i32_type: context.i32_type(),
+            i64_type: context.i64_type(),
+            f64_type: context.f64_type(),
+            i8_ptr_type: context.i8_type().ptr_type(AddressSpace::Generic),
+        };
+
+        let printf_fn_type = ty.i32_type.fn_type(
+            &[context
+                .i8_type()
+                .ptr_type(inkwell::AddressSpace::Generic)
+                .as_basic_type_enum()],
+            false,
+        );
+        let printf_fn = module.add_function("printf", printf_fn_type, None);
+
+        let fns = ExternFunctions { printf: printf_fn };
+
         Self {
             context,
             module,
             builder,
+            ty,
+            fns,
             variables,
         }
     }
@@ -43,10 +94,10 @@ impl<'ctx> LLVMBackend<'ctx> {
 
         unsafe {
             let jit_fn = execution_engine
-                .get_function::<unsafe extern "C" fn() -> i64>("main")
+                .get_function::<unsafe extern "C" fn() -> ()>("main")
                 .unwrap();
 
-            println!("Return: {}", jit_fn.call());
+            jit_fn.call();
         };
     }
 
@@ -62,6 +113,8 @@ impl<'ctx> LLVMBackend<'ctx> {
                 self.context,
                 &self.builder,
                 &self.module,
+                &self.ty,
+                &self.fns,
                 &mut self.variables,
             );
 

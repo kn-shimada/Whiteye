@@ -1,13 +1,11 @@
 use inkwell::builder::Builder;
 use inkwell::context::Context;
 use inkwell::module::Module;
-use inkwell::values::BasicValue;
-use inkwell::values::BasicValueEnum;
-use inkwell::values::PointerValue;
+use inkwell::values::{BasicValue, BasicValueEnum, FloatValue, IntValue, PointerValue};
 use std::collections::HashMap;
 
-use crate::ast::Ast;
-use crate::ast::ExprOpKind;
+use super::{ExternFunctions, LLVMTypes};
+use crate::ast::{Ast, ExprOpKind};
 use crate::value::Value;
 
 #[allow(dead_code)]
@@ -15,6 +13,8 @@ pub(crate) struct FunctionCodeGenerator<'a, 'ctx> {
     context: &'ctx Context,
     builder: &'a Builder<'ctx>,
     module: &'a Module<'ctx>,
+    ty: &'a LLVMTypes<'ctx>,
+    fns: &'a ExternFunctions<'ctx>,
     variables: &'a mut HashMap<String, PointerValue<'ctx>>,
 }
 
@@ -23,12 +23,16 @@ impl<'a, 'ctx> FunctionCodeGenerator<'a, 'ctx> {
         context: &'ctx Context,
         builder: &'a Builder<'ctx>,
         module: &'a Module<'ctx>,
+        ty: &'a LLVMTypes<'ctx>,
+        fns: &'a ExternFunctions<'ctx>,
         variables: &'a mut HashMap<String, PointerValue<'ctx>>,
     ) -> Self {
         Self {
             context,
             builder,
             module,
+            ty,
+            fns,
             variables,
         }
     }
@@ -37,7 +41,7 @@ impl<'a, 'ctx> FunctionCodeGenerator<'a, 'ctx> {
         match ast {
             Ast::Literal(_) => {
                 let code = self.generate_code(ast);
-                self.builder.build_return(Some(&code));
+                self.generate_print(code);
             }
             Ast::Expr {
                 left: _,
@@ -45,13 +49,38 @@ impl<'a, 'ctx> FunctionCodeGenerator<'a, 'ctx> {
                 right: _,
             } => {
                 let code = self.generate_code(ast);
-                self.builder.build_return(Some(&code));
+                self.generate_print(code);
             }
-            _ => {
-                self.builder
-                    .build_return(Some(&self.context.i32_type().const_int(0, false)));
+            _ => todo!(),
+        };
+
+        self.builder
+            .build_return(Some(&self.context.i32_type().const_int(0, false)));
+    }
+
+    fn generate_print(&self, code: BasicValueEnum) {
+        match code {
+            BasicValueEnum::IntValue(_) => {
+                self.builder.build_call(
+                    self.fns.printf,
+                    &[
+                        self.context
+                            .const_string(b"%d", false)
+                            .as_basic_value_enum(),
+                        code,
+                    ],
+                    "call",
+                );
             }
-        }
+            BasicValueEnum::FloatValue(_) => {
+                let i8_val = self.ty.i8_type.const_int(0x25, false);
+                let i8_val2 = self.ty.i8_type.const_int(0x66, false).ptr_type();
+                let i8_array = self.ty.i8_ptr_type.const_array(&[i8_val, i8_val2]);
+
+                self.builder.build_call(self.fns.printf, &[code], "call");
+            }
+            _ => unreachable!(),
+        };
     }
 
     fn generate_code(&self, ast: Ast) -> BasicValueEnum {
@@ -70,23 +99,43 @@ impl<'a, 'ctx> FunctionCodeGenerator<'a, 'ctx> {
         let left_value = self.generate_code(left.clone());
 
         match left_value {
-            BasicValueEnum::IntValue(_) => self.generate_int_expr(left, operator, right),
+            BasicValueEnum::IntValue(_) => self
+                .generate_int_expr(left, operator, right)
+                .as_basic_value_enum(),
+            BasicValueEnum::FloatValue(_) => self
+                .generate_float_expr(left, operator, right)
+                .as_basic_value_enum(),
             _ => todo!(),
         }
     }
 
-    fn generate_int_expr(&self, left: Ast, operator: ExprOpKind, right: Ast) -> BasicValueEnum {
+    fn generate_int_expr(&self, left: Ast, operator: ExprOpKind, right: Ast) -> IntValue {
         let left = self.generate_code(left);
         let right = self.generate_code(right);
 
         if let (BasicValueEnum::IntValue(left), BasicValueEnum::IntValue(right)) = (left, right) {
             match operator {
-                ExprOpKind::EAdd => self
-                    .builder
-                    .build_int_add(left, right, "what")
-                    .as_basic_value_enum(),
+                ExprOpKind::EAdd => self.builder.build_int_add(left, right, ""),
+                ExprOpKind::ESub => self.builder.build_int_sub(left, right, ""),
+                ExprOpKind::EMul => self.builder.build_int_mul(left, right, ""),
+                ExprOpKind::EDiv => self.builder.build_int_signed_div(left, right, ""),
+            }
+        } else {
+            panic!("TypeError"); // TODO: add details
+        }
+    }
 
-                _ => todo!(),
+    fn generate_float_expr(&self, left: Ast, operator: ExprOpKind, right: Ast) -> FloatValue {
+        let left = self.generate_code(left);
+        let right = self.generate_code(right);
+
+        if let (BasicValueEnum::FloatValue(left), BasicValueEnum::FloatValue(right)) = (left, right)
+        {
+            match operator {
+                ExprOpKind::EAdd => self.builder.build_float_add(left, right, ""),
+                ExprOpKind::ESub => self.builder.build_float_sub(left, right, ""),
+                ExprOpKind::EMul => self.builder.build_float_mul(left, right, ""),
+                ExprOpKind::EDiv => self.builder.build_float_div(left, right, ""),
             }
         } else {
             panic!("TypeError"); // TODO: add details
@@ -100,7 +149,11 @@ impl<'a, 'ctx> FunctionCodeGenerator<'a, 'ctx> {
                 .i64_type() // TODO: Decide bit length
                 .const_int(v.abs() as u64, v.is_positive())
                 .as_basic_value_enum(),
-            _ => todo!(),
+            Value::Float(v) => self
+                .context
+                .f32_type() // TODO: Decide bit length
+                .const_float(v as f64)
+                .as_basic_value_enum(),
         }
     }
 }

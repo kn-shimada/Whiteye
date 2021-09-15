@@ -7,11 +7,9 @@ mod variable;
 use nom::branch::alt;
 use nom::character::complete::multispace0;
 use nom::character::complete::space0;
-use nom::error::convert_error;
-use nom::error::VerboseError;
+use nom::error::{convert_error, VerboseError};
 use nom::sequence::delimited;
-use nom::Finish;
-use nom::IResult;
+use nom::{Finish, IResult};
 
 use crate::ast::Ast;
 use function_call::parse_function_call;
