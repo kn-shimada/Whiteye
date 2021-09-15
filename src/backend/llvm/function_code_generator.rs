@@ -1,12 +1,19 @@
 use inkwell::builder::Builder;
 use inkwell::context::Context;
 use inkwell::module::Module;
-use inkwell::values::{BasicValue, BasicValueEnum, FloatValue, IntValue, PointerValue};
+use inkwell::values::{
+    BasicValue, BasicValueEnum, FloatValue, GlobalValue, IntValue, PointerValue,
+};
 use std::collections::HashMap;
 
 use super::{ExternFunctions, LLVMTypes};
 use crate::ast::{Ast, ExprOpKind};
 use crate::value::Value;
+
+pub(crate) struct FmtStrSpecs<'a> {
+    integer: GlobalValue<'a>,
+    float: GlobalValue<'a>,
+}
 
 #[allow(dead_code)]
 pub(crate) struct FunctionCodeGenerator<'a, 'ctx> {
@@ -16,6 +23,7 @@ pub(crate) struct FunctionCodeGenerator<'a, 'ctx> {
     ty: &'a LLVMTypes<'ctx>,
     fns: &'a ExternFunctions<'ctx>,
     variables: &'a mut HashMap<String, PointerValue<'ctx>>,
+    fmt_str: FmtStrSpecs<'ctx>,
 }
 
 impl<'a, 'ctx> FunctionCodeGenerator<'a, 'ctx> {
@@ -27,6 +35,13 @@ impl<'a, 'ctx> FunctionCodeGenerator<'a, 'ctx> {
         fns: &'a ExternFunctions<'ctx>,
         variables: &'a mut HashMap<String, PointerValue<'ctx>>,
     ) -> Self {
+        let format_int = builder.build_global_string_ptr("%d\n", "format_int");
+        let format_float = builder.build_global_string_ptr("%f\n", "format_float");
+        let fmt_str = FmtStrSpecs {
+            integer: format_int,
+            float: format_float,
+        };
+
         Self {
             context,
             builder,
@@ -34,6 +49,7 @@ impl<'a, 'ctx> FunctionCodeGenerator<'a, 'ctx> {
             ty,
             fns,
             variables,
+            fmt_str,
         }
     }
 
@@ -43,6 +59,7 @@ impl<'a, 'ctx> FunctionCodeGenerator<'a, 'ctx> {
                 let code = self.generate_code(ast);
                 self.generate_print(code);
             }
+
             Ast::Expr {
                 left: _,
                 operator: _,
@@ -51,6 +68,7 @@ impl<'a, 'ctx> FunctionCodeGenerator<'a, 'ctx> {
                 let code = self.generate_code(ast);
                 self.generate_print(code);
             }
+
             _ => todo!(),
         };
 
@@ -63,21 +81,16 @@ impl<'a, 'ctx> FunctionCodeGenerator<'a, 'ctx> {
             BasicValueEnum::IntValue(_) => {
                 self.builder.build_call(
                     self.fns.printf,
-                    &[
-                        self.context
-                            .const_string(b"%d", false)
-                            .as_basic_value_enum(),
-                        code,
-                    ],
+                    &[self.fmt_str.integer.as_basic_value_enum(), code],
                     "call",
                 );
             }
             BasicValueEnum::FloatValue(_) => {
-                let i8_val = self.ty.i8_type.const_int(0x25, false);
-                let i8_val2 = self.ty.i8_type.const_int(0x66, false).ptr_type();
-                let i8_array = self.ty.i8_ptr_type.const_array(&[i8_val, i8_val2]);
-
-                self.builder.build_call(self.fns.printf, &[code], "call");
+                self.builder.build_call(
+                    self.fns.printf,
+                    &[self.fmt_str.float.as_basic_value_enum(), code],
+                    "call",
+                );
             }
             _ => unreachable!(),
         };
@@ -151,7 +164,7 @@ impl<'a, 'ctx> FunctionCodeGenerator<'a, 'ctx> {
                 .as_basic_value_enum(),
             Value::Float(v) => self
                 .context
-                .f32_type() // TODO: Decide bit length
+                .f64_type() // TODO: Decide bit length
                 .const_float(v as f64)
                 .as_basic_value_enum(),
         }
