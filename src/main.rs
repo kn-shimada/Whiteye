@@ -28,15 +28,15 @@ fn main() -> Result<()> {
                 .short("B")
                 .long("backend"),
         )
-        .arg(Arg::with_name("dbg").short("d").long("debug"));
+        .arg(Arg::with_name("verbose").short("v").long("verbose"));
 
     let matches = app.get_matches();
 
-    let is_debug = matches.occurrences_of("dbg") != 0;
+    let is_verbose = matches.occurrences_of("verbose") != 0;
 
     let mut logger = env_logger::Builder::new();
 
-    if is_debug {
+    if is_verbose {
         logger.filter_level(LevelFilter::Debug);
         logger.init();
     }
