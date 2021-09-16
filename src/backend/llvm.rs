@@ -12,21 +12,7 @@ use crate::backend::llvm::function_code_generator::FunctionCodeGenerator;
 
 mod function_code_generator;
 
-#[no_mangle]
-pub extern "C" fn print_float() -> i32 {
-    println!("a");
-    0
-}
-
-#[no_mangle]
-pub extern "C" fn print_integer(x: i64) -> i32 {
-    println!("{}", x.to_string());
-    0
-}
-
-#[used]
-static EXTERNAL_FNS: [extern "C" fn() -> i32; 1] = [print_float];
-
+#[allow(dead_code)]
 pub struct LLVMTypes<'a> {
     i8_type: IntType<'a>,
     i32_type: IntType<'a>,

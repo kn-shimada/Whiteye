@@ -99,11 +99,13 @@ impl<'a, 'ctx> FunctionCodeGenerator<'a, 'ctx> {
     fn generate_code(&self, ast: Ast) -> BasicValueEnum {
         match ast {
             Ast::Literal(value) => self.generate_value(value),
+
             Ast::Expr {
                 left,
                 operator,
                 right,
             } => self.generate_expr(*left, operator, *right),
+
             _ => todo!(),
         }
     }
@@ -115,10 +117,12 @@ impl<'a, 'ctx> FunctionCodeGenerator<'a, 'ctx> {
             BasicValueEnum::IntValue(_) => self
                 .generate_int_expr(left, operator, right)
                 .as_basic_value_enum(),
+
             BasicValueEnum::FloatValue(_) => self
                 .generate_float_expr(left, operator, right)
                 .as_basic_value_enum(),
-            _ => todo!(),
+
+            _ => unreachable!(),
         }
     }
 
