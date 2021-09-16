@@ -8,7 +8,8 @@ use nom::sequence::{delimited, tuple};
 use nom::IResult;
 
 use super::variable::parse_variable_name;
-use crate::ast::{Ast, ExprOpKind, UnaryOpKind, Value};
+use crate::ast::{Ast, ExprOpKind, UnaryOpKind};
+use crate::value::Value;
 
 pub fn parse_add_sub(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
     let (input, left_expr) = parse_mul_div(input)?;

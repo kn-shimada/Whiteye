@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 use std::error::Error;
 
-use crate::ast::{AssignmentOpKind, Ast, ExprOpKind, UnaryOpKind, Value, ValueType};
-
+use crate::ast::{AssignmentOpKind, Ast, ExprOpKind, UnaryOpKind, ValueType};
+use crate::value::Value;
 use crate::builtin_functions;
 
 #[derive(Debug, thiserror::Error)]
