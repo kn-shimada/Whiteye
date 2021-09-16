@@ -69,6 +69,15 @@ impl<'a, 'ctx> FunctionCodeGenerator<'a, 'ctx> {
                 self.generate_print(code);
             }
 
+            Ast::FunctionCall { name, argument } => {
+                if name == "print" {
+                    let code = self.generate_code(*argument);
+                    self.generate_print(code);
+                } else {
+                    panic!("undefined function name");
+                }
+            }
+
             _ => todo!(),
         };
 
