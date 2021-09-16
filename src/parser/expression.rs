@@ -70,8 +70,8 @@ fn parse_par_float_int_var(input: &str) -> IResult<&str, Ast, VerboseError<&str>
         space0,
         alt((
             parse_parentheses,
-            parse_float,
             parse_integer,
+            parse_float,
             parse_variable,
         )),
         space0,
