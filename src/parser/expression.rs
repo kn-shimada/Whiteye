@@ -3,7 +3,7 @@ use nom::bytes::complete::tag;
 use nom::character::complete::{digit1, one_of, space0};
 use nom::error::VerboseError;
 use nom::multi::many0;
-use nom::number::complete::float;
+use nom::number::complete::recognize_float;
 use nom::sequence::{delimited, tuple};
 use nom::IResult;
 
@@ -70,8 +70,8 @@ fn parse_par_float_int_var(input: &str) -> IResult<&str, Ast, VerboseError<&str>
         space0,
         alt((
             parse_parentheses,
-            parse_integer,
             parse_float,
+            parse_integer,
             parse_variable,
         )),
         space0,
@@ -89,7 +89,13 @@ fn parse_integer(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
 }
 
 fn parse_float(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
-    let (input, value) = float(input)?;
+    // check float
+    let (check_input, _) = digit1(input)?;
+    let _ = tag(".")(check_input)?;
+
+    digit1(input)?;
+    let (input, value_str) = recognize_float(input)?;
+    let value = value_str.parse::<f64>().unwrap();
     Ok((input, Ast::Literal(Value::Float(value))))
 }
 

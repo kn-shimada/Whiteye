@@ -31,8 +31,8 @@ impl Machine {
                 expr,
             } => {
                 let variable_value = match value_type {
-                    ValueType::Integer => Value::Integer(self.eval_math_expr(*expr)),
-                    ValueType::Float => Value::Float(self.eval_math_expr(*expr) as f32),
+                    ValueType::Integer => self.eval_math_expr(*expr),
+                    ValueType::Float => self.eval_math_expr(*expr),
                 };
 
                 self.variables.insert(name, variable_value);
@@ -50,12 +50,13 @@ impl Machine {
                     Some(v) => v,
                     None => return Err(MachineError::VariableUndefined(name).into()),
                 } {
+                    let substitute_value = Value::from(*variable_value);
                     let new_variable_value = match operator {
-                        AssignmentOpKind::AEqual => Value::Integer(variable_expr),
-                        AssignmentOpKind::AAdd => Value::Integer(variable_value + variable_expr),
-                        AssignmentOpKind::ASub => Value::Integer(variable_value - variable_expr),
-                        AssignmentOpKind::AMul => Value::Integer(variable_value * variable_expr),
-                        AssignmentOpKind::ADiv => Value::Integer(variable_value / variable_expr),
+                        AssignmentOpKind::AEqual => variable_expr,
+                        AssignmentOpKind::AAdd => variable_expr + substitute_value,
+                        AssignmentOpKind::ASub => variable_expr - substitute_value,
+                        AssignmentOpKind::AMul => variable_expr * substitute_value,
+                        AssignmentOpKind::ADiv => variable_expr / substitute_value,
                     };
                     match self.variables.get_mut(&name) {
                         Some(v) => *v = new_variable_value,
@@ -76,22 +77,22 @@ impl Machine {
             }
 
             _ => {
-                println!("{}", self.eval_math_expr(expr));
+                println!("{:?}", self.eval_math_expr(expr));
                 Ok(())
             }
         }
     }
 
-    pub fn eval_math_expr(&mut self, expr: Ast) -> isize {
+    pub fn eval_math_expr(&mut self, expr: Ast) -> Value {
         match expr {
             Ast::Literal(v) => match v {
-                Value::Integer(value) => value,
-                Value::Float(value) => value as isize,
+                Value::Integer(value) => Value::Integer(value),
+                Value::Float(value) => Value::Float(value),
             },
 
             Ast::Variable(name) => match self.variables.get(&name).unwrap() {
-                Value::Integer(value) => *value,
-                Value::Float(value) => *value as isize,
+                Value::Integer(value) => Value::Integer(*value),
+                Value::Float(value) => Value::Float(*value),
             },
 
             Ast::Expr {
@@ -126,7 +127,7 @@ impl Machine {
             Ast::Monomial {
                 operator: UnaryOpKind::UMinus,
                 expr,
-            } => -self.eval_math_expr(*expr),
+            } => Value::from(-1) * self.eval_math_expr(*expr),
 
             _ => unreachable!(),
         }

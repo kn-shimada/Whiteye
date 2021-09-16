@@ -5,6 +5,7 @@ mod variable;
 
 use nom::branch::alt;
 use nom::character::complete::multispace0;
+use nom::character::complete::newline;
 use nom::error::convert_error;
 use nom::error::VerboseError;
 use nom::sequence::delimited;
@@ -45,6 +46,6 @@ pub fn root_parser(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
             parse_function_call,
             parse_add_sub,
         )),
-        multispace0,
+        newline,
     )(input)
 }

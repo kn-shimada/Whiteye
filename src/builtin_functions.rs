@@ -1,3 +1,5 @@
-pub fn print(value: isize) {
+use crate::ast::Value;
+
+pub fn print(value: Value) {
     println!("{}", value);
 }
