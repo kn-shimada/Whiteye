@@ -5,7 +5,7 @@ use nom::sequence::delimited;
 use nom::IResult;
 
 use super::expression::parse_add_sub;
-use crate::ast::{AssignmentOpKind, Ast, VariableType};
+use crate::ast::{AssignmentOpKind, Ast, ValueType};
 
 pub fn parse_variable_declaration(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
     let (input, variable_name) = delimited(
@@ -21,7 +21,7 @@ pub fn parse_variable_declaration(input: &str) -> IResult<&str, Ast, VerboseErro
         input,
         Ast::VariableDeclaration {
             name: variable_name.to_string(),
-            data_type: variable_type,
+            value_type: variable_type,
             expr: Box::new(variable_expr),
         },
     ))
@@ -45,19 +45,21 @@ pub fn parse_variable_assignment(input: &str) -> IResult<&str, Ast, VerboseError
 pub fn parse_variable_name(input: &str) -> IResult<&str, &str, VerboseError<&str>> {
     let (input, variable_name) =
         is_a("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_")(input)?;
-    match is_a::<&str, &str, VerboseError<&str>>("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_")(variable_name) {
+    match is_a::<&str, &str, VerboseError<&str>>(
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_",
+    )(variable_name)
+    {
         Ok((_, _)) => Ok((input, variable_name)),
         Err(e) => Err(e),
-
     }
 }
 
-pub fn parse_variable_type(input: &str) -> IResult<&str, VariableType, VerboseError<&str>> {
+pub fn parse_variable_type(input: &str) -> IResult<&str, ValueType, VerboseError<&str>> {
     let (input, variable_type_str) = delimited(multispace0, alphanumeric0, multispace0)(input)?;
     Ok((
         input,
         match variable_type_str {
-            "int" => VariableType::Integer,
+            "int" => ValueType::Integer,
             _ => panic!("Unknown VariableDeclaration type"),
         },
     ))

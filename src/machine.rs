@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::error::Error;
 
-use crate::ast::{AssignmentOpKind, Ast, ExprOpKind, UnaryOpKind, VariableType};
+use crate::ast::{AssignmentOpKind, Ast, ExprOpKind, UnaryOpKind, Value, ValueType};
 
 use crate::builtin_functions;
 
@@ -13,14 +13,9 @@ pub enum MachineError {
     InvalidFunctionName(String),
 }
 
-#[derive(Debug)]
-pub enum Variable {
-    Int(isize),
-}
-
 #[derive(Debug, Default)]
 pub struct Machine {
-    pub variables: HashMap<String, Variable>,
+    pub variables: HashMap<String, Value>,
 }
 
 impl Machine {
@@ -32,11 +27,12 @@ impl Machine {
         match expr {
             Ast::VariableDeclaration {
                 name,
-                data_type,
+                value_type,
                 expr,
             } => {
-                let variable_value = match data_type {
-                    VariableType::Int => Variable::Int(self.eval_math_expr(*expr)),
+                let variable_value = match value_type {
+                    ValueType::Integer => Value::Integer(self.eval_math_expr(*expr)),
+                    ValueType::Float => Value::Float(self.eval_math_expr(*expr) as f32),
                 };
 
                 self.variables.insert(name, variable_value);
@@ -50,21 +46,22 @@ impl Machine {
                 expr,
             } => {
                 let variable_expr = self.eval_math_expr(*expr);
-                let Variable::Int(variable_value) = match self.variables.get(&name) {
+                if let Value::Integer(variable_value) = match self.variables.get(&name) {
                     Some(v) => v,
                     None => return Err(MachineError::VariableUndefined(name).into()),
-                };
-                let new_variable_value = match operator {
-                    AssignmentOpKind::AEqual => Variable::Int(variable_expr),
-                    AssignmentOpKind::AAdd => Variable::Int(variable_value + variable_expr),
-                    AssignmentOpKind::ASub => Variable::Int(variable_value - variable_expr),
-                    AssignmentOpKind::AMul => Variable::Int(variable_value * variable_expr),
-                    AssignmentOpKind::ADiv => Variable::Int(variable_value / variable_expr),
-                };
-                match self.variables.get_mut(&name) {
-                    Some(v) => *v = new_variable_value,
-                    None => return Err(MachineError::VariableUndefined(name).into()),
-                };
+                } {
+                    let new_variable_value = match operator {
+                        AssignmentOpKind::AEqual => Value::Integer(variable_expr),
+                        AssignmentOpKind::AAdd => Value::Integer(variable_value + variable_expr),
+                        AssignmentOpKind::ASub => Value::Integer(variable_value - variable_expr),
+                        AssignmentOpKind::AMul => Value::Integer(variable_value * variable_expr),
+                        AssignmentOpKind::ADiv => Value::Integer(variable_value / variable_expr),
+                    };
+                    match self.variables.get_mut(&name) {
+                        Some(v) => *v = new_variable_value,
+                        None => return Err(MachineError::VariableUndefined(name).into()),
+                    };
+                }
 
                 Ok(())
             }
@@ -87,10 +84,14 @@ impl Machine {
 
     pub fn eval_math_expr(&mut self, expr: Ast) -> isize {
         match expr {
-            Ast::Number(num) => num,
+            Ast::Literal(v) => match v {
+                Value::Integer(value) => value,
+                Value::Float(value) => value as isize,
+            },
 
             Ast::Variable(name) => match self.variables.get(&name).unwrap() {
-                Variable::Int(value) => *value,
+                Value::Integer(value) => *value,
+                Value::Float(value) => *value as isize,
             },
 
             Ast::Expr {
