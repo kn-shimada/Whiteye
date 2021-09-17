@@ -73,6 +73,7 @@ fn parse_par_float_int_var(input: &str) -> IResult<&str, Ast, VerboseError<&str>
             parse_parentheses,
             parse_float,
             parse_integer,
+            parse_bool,
             parse_variable,
         )),
         space0,
@@ -98,6 +99,12 @@ fn parse_float(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
     let (input, value_str) = recognize_float(input)?;
     let value = value_str.parse::<f64>().unwrap();
     Ok((input, Ast::Literal(Value::Float(value))))
+}
+
+fn parse_bool(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
+    let (input, truth_value_str) = alt((tag("true"), tag("false")))(input)?;
+    let truth_value = truth_value_str.parse::<bool>().unwrap();
+    Ok((input, Ast::Literal(Value::Bool(truth_value))))
 }
 
 fn parse_variable(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {

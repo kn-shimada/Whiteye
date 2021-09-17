@@ -2,8 +2,8 @@ use std::collections::HashMap;
 use std::error::Error;
 
 use crate::ast::{AssignmentOpKind, Ast, ExprOpKind, UnaryOpKind, ValueType};
-use crate::value::Value;
-use crate::builtin_functions;
+
+use crate::{builtin_functions, value::Value};
 
 #[derive(Debug, thiserror::Error)]
 pub enum MachineError {
@@ -33,6 +33,7 @@ impl Machine {
                 let variable_value = match value_type {
                     ValueType::Integer => self.eval_math_expr(*expr),
                     ValueType::Float => self.eval_math_expr(*expr),
+                    ValueType::Bool => self.eval_math_expr(*expr),
                 };
 
                 self.variables.insert(name, variable_value);
@@ -76,10 +77,7 @@ impl Machine {
                 Ok(())
             }
 
-            _ => {
-                println!("{:?}", self.eval_math_expr(expr));
-                Ok(())
-            }
+            _ => panic!()
         }
     }
 
@@ -88,11 +86,13 @@ impl Machine {
             Ast::Literal(v) => match v {
                 Value::Integer(value) => Value::Integer(value),
                 Value::Float(value) => Value::Float(value),
+                Value::Bool(value) => Value::Bool(value),
             },
 
             Ast::Variable(name) => match self.variables.get(&name).unwrap() {
                 Value::Integer(value) => Value::Integer(*value),
                 Value::Float(value) => Value::Float(*value),
+                Value::Bool(value) => Value::Bool(*value),
             },
 
             Ast::Expr {

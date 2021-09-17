@@ -61,6 +61,7 @@ pub fn parse_variable_type(input: &str) -> IResult<&str, ValueType, VerboseError
         match variable_type_str {
             "int" => ValueType::Integer,
             "float" => ValueType::Float,
+            "bool" => ValueType::Bool,
             _ => panic!("Unknown VariableDeclaration type"),
         },
     ))

@@ -4,6 +4,7 @@ use crate::value::Value;
 pub enum ValueType {
     Integer,
     Float,
+    Bool,
 }
 
 // 演算子
