@@ -63,13 +63,13 @@ pub enum Ast {
         expr: Box<Ast>,
     },
 
-    ComparisonOp {
+    ComparisonExpr {
         left: Box<Ast>,
         operator: ComparisonOpKind,
         right: Box<Ast>,
     },
 
-    LogicalOp {
+    LogicalExpr {
         left: Box<Ast>,
         operator: LogicalOpKind,
         right: Box<Ast>,
