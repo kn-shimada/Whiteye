@@ -49,7 +49,6 @@ pub enum ComparisonOpKind {
 pub enum LogicalOpKind {
     LAnd,
     LOr,
-    LXor,
     LNot,
 }
 
