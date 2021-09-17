@@ -3,8 +3,10 @@ pub mod llvm;
 
 pub use backend_type::{BackendType, BACKEND_TYPES};
 
-/*
-trait Backend {
-    fn new() -> Self;
+trait CompileBackend {
+    fn compile();
 }
-*/
+
+trait JITBackend {
+    fn jit(&mut self, ast: &[crate::ast::Ast]);
+}
