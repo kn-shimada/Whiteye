@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::error::Error;
 
-use crate::ast::{AssignmentOpKind, Ast, ExprOpKind, UnaryOpKind, ValueType};
+use crate::ast::{AssignmentOpKind, Ast, ComparisonOpKind, ExprOpKind, UnaryOpKind, ValueType};
 
 use crate::{builtin_functions, value::Value};
 
@@ -31,9 +31,9 @@ impl Machine {
                 expr,
             } => {
                 let variable_value = match value_type {
-                    ValueType::Integer => self.eval_math_expr(*expr),
-                    ValueType::Float => self.eval_math_expr(*expr),
-                    ValueType::Bool => self.eval_math_expr(*expr),
+                    ValueType::Integer => self.eval_expression(*expr),
+                    ValueType::Float => self.eval_expression(*expr),
+                    ValueType::Bool => self.eval_expression(*expr),
                 };
 
                 self.variables.insert(name, variable_value);
@@ -46,42 +46,44 @@ impl Machine {
                 operator,
                 expr,
             } => {
-                let variable_expr = self.eval_math_expr(*expr);
-                if let Value::Integer(variable_value) = match self.variables.get(&name) {
-                    Some(v) => v,
+                let variable_expr = self.eval_expression(*expr);
+                let variable_value = match self.variables.get(&name) {
+                    Some(v) => match v {
+                        Value::Integer(value) => Value::Integer(*value),
+                        Value::Float(value) => Value::Float(*value),
+                        Value::Bool(value) => Value::Bool(*value),
+                    },
                     None => return Err(MachineError::VariableUndefined(name).into()),
-                } {
-                    let substitute_value = Value::from(*variable_value);
-                    let new_variable_value = match operator {
-                        AssignmentOpKind::AEqual => variable_expr,
-                        AssignmentOpKind::AAdd => variable_expr + substitute_value,
-                        AssignmentOpKind::ASub => variable_expr - substitute_value,
-                        AssignmentOpKind::AMul => variable_expr * substitute_value,
-                        AssignmentOpKind::ADiv => variable_expr / substitute_value,
-                    };
-                    match self.variables.get_mut(&name) {
-                        Some(v) => *v = new_variable_value,
-                        None => return Err(MachineError::VariableUndefined(name).into()),
-                    };
-                }
+                };
+                let new_variable_value = match operator {
+                    AssignmentOpKind::AEqual => variable_expr,
+                    AssignmentOpKind::AAdd => variable_expr + variable_value,
+                    AssignmentOpKind::ASub => variable_expr - variable_value,
+                    AssignmentOpKind::AMul => variable_expr * variable_value,
+                    AssignmentOpKind::ADiv => variable_expr / variable_value,
+                };
+                match self.variables.get_mut(&name) {
+                    Some(v) => *v = new_variable_value,
+                    None => return Err(MachineError::VariableUndefined(name).into()),
+                };
 
                 Ok(())
             }
 
             Ast::FunctionCall { name, argument } => {
                 match name.as_ref() {
-                    "print" => builtin_functions::print(self.eval_math_expr(*argument)),
+                    "print" => builtin_functions::print(self.eval_expression(*argument)),
                     _ => return Err(MachineError::InvalidFunctionName(name).into()),
                 };
 
                 Ok(())
             }
 
-            _ => panic!()
+            _ => panic!(),
         }
     }
 
-    pub fn eval_math_expr(&mut self, expr: Ast) -> Value {
+    pub fn eval_expression(&mut self, expr: Ast) -> Value {
         match expr {
             Ast::Literal(v) => match v {
                 Value::Integer(value) => Value::Integer(value),
@@ -99,35 +101,71 @@ impl Machine {
                 left,
                 operator: ExprOpKind::EAdd,
                 right,
-            } => self.eval_math_expr(*left) + self.eval_math_expr(*right),
+            } => self.eval_expression(*left) + self.eval_expression(*right),
 
             Ast::Expr {
                 left,
                 operator: ExprOpKind::ESub,
                 right,
-            } => self.eval_math_expr(*left) - self.eval_math_expr(*right),
+            } => self.eval_expression(*left) - self.eval_expression(*right),
 
             Ast::Expr {
                 left,
                 operator: ExprOpKind::EMul,
                 right,
-            } => self.eval_math_expr(*left) * self.eval_math_expr(*right),
+            } => self.eval_expression(*left) * self.eval_expression(*right),
 
             Ast::Expr {
                 left,
                 operator: ExprOpKind::EDiv,
                 right,
-            } => self.eval_math_expr(*left) / self.eval_math_expr(*right),
+            } => self.eval_expression(*left) / self.eval_expression(*right),
 
             Ast::Monomial {
                 operator: UnaryOpKind::UPlus,
                 expr,
-            } => self.eval_math_expr(*expr),
+            } => self.eval_expression(*expr),
 
             Ast::Monomial {
                 operator: UnaryOpKind::UMinus,
                 expr,
-            } => Value::from(-1) * self.eval_math_expr(*expr),
+            } => Value::from(-1) * self.eval_expression(*expr),
+
+            Ast::ComparisonExpr {
+                left,
+                operator: ComparisonOpKind::CEqual,
+                right,
+            } => Value::from(self.eval_expression(*left) == self.eval_expression(*right)),
+
+            Ast::ComparisonExpr {
+                left,
+                operator: ComparisonOpKind::CNot,
+                right,
+            } => Value::from(self.eval_expression(*left) != self.eval_expression(*right)),
+
+            Ast::ComparisonExpr {
+                left,
+                operator: ComparisonOpKind::CGreater,
+                right,
+            } => Value::from(self.eval_expression(*left) > self.eval_expression(*right)),
+
+            Ast::ComparisonExpr {
+                left,
+                operator: ComparisonOpKind::CLess,
+                right,
+            } => Value::from(self.eval_expression(*left) < self.eval_expression(*right)),
+
+            Ast::ComparisonExpr {
+                left,
+                operator: ComparisonOpKind::CGreaterEqual,
+                right,
+            } => Value::from(self.eval_expression(*left) >= self.eval_expression(*right)),
+
+            Ast::ComparisonExpr {
+                left,
+                operator: ComparisonOpKind::CLessEqual,
+                right,
+            } => Value::from(self.eval_expression(*left) <= self.eval_expression(*right)),
 
             _ => unreachable!(),
         }

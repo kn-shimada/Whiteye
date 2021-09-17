@@ -34,6 +34,12 @@ impl From<f64> for Value {
     }
 }
 
+impl From<bool> for Value {
+    fn from(v: bool) -> Self {
+        Value::Bool(v)
+    }
+}
+
 impl Add for Value {
     type Output = Value;
 
@@ -117,6 +123,24 @@ impl Div for Value {
                 _ => panic!(),
             },
 
+            _ => panic!(),
+        }
+    }
+}
+
+impl PartialOrd for Value {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        match self {
+            Value::Integer(v_lhs) => match other {
+                Value::Integer(v) => v_lhs.partial_cmp(v),
+                Value::Float(v) => (*v_lhs as f64).partial_cmp(v),
+                _ => panic!(),
+            },
+            Value::Float(v_lhs) => match other {
+                Value::Integer(v) => v_lhs.partial_cmp(&(*v as f64)),
+                Value::Float(v) => v_lhs.partial_cmp(v),
+                _ => panic!(),
+            },
             _ => panic!(),
         }
     }

@@ -1,10 +1,13 @@
+use nom::branch::alt;
 use nom::bytes::complete::{is_a, tag};
 use nom::character::complete::{alphanumeric0, multispace0};
 use nom::error::VerboseError;
 use nom::sequence::delimited;
 use nom::IResult;
 
+use super::conditional_expression::parse_conditional_expr;
 use super::expression::parse_add_sub;
+
 use crate::ast::{AssignmentOpKind, Ast, ValueType};
 
 pub fn parse_variable_declaration(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
@@ -16,7 +19,7 @@ pub fn parse_variable_declaration(input: &str) -> IResult<&str, Ast, VerboseErro
     let (input, variable_type) = parse_variable_type(input)?;
     let (input, _) = tag("=")(input)?;
     let (input, _) = multispace0(input)?;
-    let (input, variable_expr) = parse_add_sub(input)?;
+    let (input, variable_expr) = alt((parse_conditional_expr, parse_add_sub))(input)?;
     Ok((
         input,
         Ast::VariableDeclaration {
@@ -31,7 +34,7 @@ pub fn parse_variable_assignment(input: &str) -> IResult<&str, Ast, VerboseError
     let (input, variable_name) = parse_variable_name(input)?;
     let (input, assignment_op) =
         delimited(multispace0, parse_assignment_operator, multispace0)(input)?;
-    let (input, variable_expr) = parse_add_sub(input)?;
+    let (input, variable_expr) = alt((parse_conditional_expr, parse_add_sub))(input)?;
     Ok((
         input,
         Ast::VariableAssignment {
