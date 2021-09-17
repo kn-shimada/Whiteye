@@ -197,7 +197,7 @@ impl<'a, 'ctx> FunctionCodeGenerator<'a, 'ctx> {
     }
 }
 
-fn to_basic_value_enum<'ctx>(context: &'ctx Context, value: Value) -> BasicValueEnum<'ctx> {
+fn to_basic_value_enum(context: &Context, value: Value) -> BasicValueEnum {
     match value {
         Value::Integer(v) => context
             .i64_type() // TODO: Decide bit length
