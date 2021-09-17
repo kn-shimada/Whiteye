@@ -53,33 +53,43 @@ impl<'a, 'ctx> FunctionCodeGenerator<'a, 'ctx> {
         }
     }
 
-    pub(crate) fn generate(&self, ast: Ast) {
-        match ast {
-            Ast::Literal(_) => {
-                let code = self.generate_code(ast);
-                self.generate_print(code);
-            }
+    pub(crate) fn generate(&mut self, ast: &[Ast]) {
+        let main_fn_type = self.context.i32_type().fn_type(&[], false);
+        let main_function = self.module.add_function("main", main_fn_type, None);
 
-            Ast::Expr {
-                left: _,
-                operator: _,
-                right: _,
-            } => {
-                let code = self.generate_code(ast);
-                self.generate_print(code);
-            }
+        let entry_basic_block = self.context.append_basic_block(main_function, "entry");
+        self.builder.position_at_end(entry_basic_block);
 
-            Ast::FunctionCall { name, argument } => {
-                if name == "print" {
-                    let code = self.generate_code(*argument);
+        for a in ast {
+            match a {
+                Ast::Literal(_) => {
+                    let code = self.generate_value(a.clone());
                     self.generate_print(code);
-                } else {
-                    panic!("undefined function name");
                 }
-            }
 
-            _ => todo!(),
-        };
+                Ast::Expr {
+                    left: _,
+                    operator: _,
+                    right: _,
+                } => {
+                    let code = self.generate_value(a.clone());
+                    self.generate_print(code);
+                }
+
+                Ast::FunctionCall { name, argument } => {
+                    if name == "print" {
+                        let code = self.generate_value(*argument.clone());
+                        self.generate_print(code);
+                    } else {
+                        panic!("undefined function name");
+                    }
+                }
+
+                _ => {
+                    self.generate_code(a.clone());
+                }
+            };
+        }
 
         self.builder
             .build_return(Some(&self.context.i32_type().const_int(0, false)));
@@ -94,6 +104,7 @@ impl<'a, 'ctx> FunctionCodeGenerator<'a, 'ctx> {
                     "call",
                 );
             }
+
             BasicValueEnum::FloatValue(_) => {
                 self.builder.build_call(
                     self.fns.printf,
@@ -101,13 +112,14 @@ impl<'a, 'ctx> FunctionCodeGenerator<'a, 'ctx> {
                     "call",
                 );
             }
+
             _ => unreachable!(),
         };
     }
 
-    fn generate_code(&self, ast: Ast) -> BasicValueEnum {
+    fn generate_value(&self, ast: Ast) -> BasicValueEnum<'ctx> {
         match ast {
-            Ast::Literal(value) => self.generate_value(value),
+            Ast::Literal(value) => to_basic_value_enum(self.context, value),
 
             Ast::Expr {
                 left,
@@ -119,8 +131,24 @@ impl<'a, 'ctx> FunctionCodeGenerator<'a, 'ctx> {
         }
     }
 
-    fn generate_expr(&self, left: Ast, operator: ExprOpKind, right: Ast) -> BasicValueEnum {
-        let left_value = self.generate_code(left.clone());
+    fn generate_code(&mut self, ast: Ast) {
+        match ast {
+            Ast::VariableDeclaration {
+                name,
+                value_type: _,
+                expr,
+            } => {
+                let variable_value: PointerValue = self.generate_value(*expr).into_pointer_value();
+
+                self.variables.insert(name, variable_value);
+            }
+
+            _ => todo!(),
+        }
+    }
+
+    fn generate_expr(&self, left: Ast, operator: ExprOpKind, right: Ast) -> BasicValueEnum<'ctx> {
+        let left_value = self.generate_value(left.clone());
 
         match left_value {
             BasicValueEnum::IntValue(_) => self
@@ -135,9 +163,9 @@ impl<'a, 'ctx> FunctionCodeGenerator<'a, 'ctx> {
         }
     }
 
-    fn generate_int_expr(&self, left: Ast, operator: ExprOpKind, right: Ast) -> IntValue {
-        let left = self.generate_code(left);
-        let right = self.generate_code(right);
+    fn generate_int_expr(&self, left: Ast, operator: ExprOpKind, right: Ast) -> IntValue<'ctx> {
+        let left = self.generate_value(left);
+        let right = self.generate_value(right);
 
         if let (BasicValueEnum::IntValue(left), BasicValueEnum::IntValue(right)) = (left, right) {
             match operator {
@@ -151,9 +179,9 @@ impl<'a, 'ctx> FunctionCodeGenerator<'a, 'ctx> {
         }
     }
 
-    fn generate_float_expr(&self, left: Ast, operator: ExprOpKind, right: Ast) -> FloatValue {
-        let left = self.generate_code(left);
-        let right = self.generate_code(right);
+    fn generate_float_expr(&self, left: Ast, operator: ExprOpKind, right: Ast) -> FloatValue<'ctx> {
+        let left = self.generate_value(left);
+        let right = self.generate_value(right);
 
         if let (BasicValueEnum::FloatValue(left), BasicValueEnum::FloatValue(right)) = (left, right)
         {
@@ -167,19 +195,17 @@ impl<'a, 'ctx> FunctionCodeGenerator<'a, 'ctx> {
             panic!("TypeError"); // TODO: add details
         }
     }
+}
 
-    fn generate_value(&self, value: Value) -> BasicValueEnum {
-        match value {
-            Value::Integer(v) => self
-                .context
-                .i64_type() // TODO: Decide bit length
-                .const_int(v.abs() as u64, v.is_positive())
-                .as_basic_value_enum(),
-            Value::Float(v) => self
-                .context
-                .f64_type() // TODO: Decide bit length
-                .const_float(v as f64)
-                .as_basic_value_enum(),
-        }
+fn to_basic_value_enum<'ctx>(context: &'ctx Context, value: Value) -> BasicValueEnum<'ctx> {
+    match value {
+        Value::Integer(v) => context
+            .i64_type() // TODO: Decide bit length
+            .const_int(v.abs() as u64, v.is_positive())
+            .as_basic_value_enum(),
+        Value::Float(v) => context
+            .f64_type() // TODO: Decide bit length
+            .const_float(v as f64)
+            .as_basic_value_enum(),
     }
 }

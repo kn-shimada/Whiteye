@@ -94,18 +94,16 @@ impl<'ctx> LLVMBackend<'ctx> {
         let entry_basic_block = self.context.append_basic_block(main_function, "entry");
         self.builder.position_at_end(entry_basic_block);
 
-        for a in ast {
-            let function_code_generator = FunctionCodeGenerator::new(
-                self.context,
-                &self.builder,
-                &self.module,
-                &self.ty,
-                &self.fns,
-                &mut self.variables,
-            );
+        let mut function_code_generator = FunctionCodeGenerator::new(
+            self.context,
+            &self.builder,
+            &self.module,
+            &self.ty,
+            &self.fns,
+            &mut self.variables,
+        );
 
-            function_code_generator.generate(a.clone());
-        }
+        function_code_generator.generate(ast);
 
         info!("IR:\n{}", self.module.print_to_string().to_string());
     }
