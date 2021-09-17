@@ -7,7 +7,6 @@ pub enum ValueType {
     Bool,
 }
 
-// 演算子
 #[derive(Debug, PartialEq)]
 pub enum ExprOpKind {
     EAdd,
@@ -16,14 +15,12 @@ pub enum ExprOpKind {
     EDiv,
 }
 
-// 単項演算子
 #[derive(Debug, PartialEq)]
 pub enum UnaryOpKind {
     UPlus,
     UMinus,
 }
 
-// 代入演算子
 #[derive(Debug, PartialEq)]
 pub enum AssignmentOpKind {
     AEqual,
@@ -33,7 +30,6 @@ pub enum AssignmentOpKind {
     ADiv,
 }
 
-// 比較演算子
 #[derive(Debug, PartialEq)]
 pub enum ComparisonOpKind {
     CEqual,
@@ -44,49 +40,55 @@ pub enum ComparisonOpKind {
     CLessEqual,
 }
 
-// 論理演算子
 #[derive(Debug, PartialEq)]
 pub enum LogicalOpKind {
     LAnd,
     LOr,
-    LNot,
 }
 
-// 抽象構文木
 #[derive(Debug, PartialEq)]
 pub enum Ast {
-    Literal(Value), // 値
+    Literal(Value),
 
-    Variable(String), // 変数
+    Variable(String),
 
-    // 多項式
     Expr {
         left: Box<Ast>,
         operator: ExprOpKind,
         right: Box<Ast>,
     },
 
-    // 単項式
     Monomial {
         operator: UnaryOpKind,
         expr: Box<Ast>,
     },
 
-    // 変数宣言
+    ComparisonOp {
+        left: Box<Ast>,
+        operator: ComparisonOpKind,
+        right: Box<Ast>,
+    },
+
+    LogicalOp {
+        left: Box<Ast>,
+        operator: LogicalOpKind,
+        right: Box<Ast>,
+    },
+
+    NotOp(Box<Ast>),
+
     VariableDeclaration {
         name: String,
         value_type: ValueType,
         expr: Box<Ast>,
     },
 
-    // 変数への代入
     VariableAssignment {
         name: String,
         operator: AssignmentOpKind,
         expr: Box<Ast>,
     },
 
-    // 組み込み関数の呼び出し
     FunctionCall {
         name: String,
         argument: Box<Ast>,
