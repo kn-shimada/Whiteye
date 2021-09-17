@@ -33,6 +33,26 @@ pub enum AssignmentOpKind {
     ADiv,
 }
 
+// 比較演算子
+#[derive(Debug, PartialEq)]
+pub enum ComparisonOpKind {
+    CEqual,
+    CNot,
+    CMore,
+    CLess,
+    CMoreEqual,
+    CLessEqual,
+}
+
+// 論理演算子
+#[derive(Debug, PartialEq)]
+pub enum LogicalOpKind {
+    LAnd,
+    LOr,
+    LXor,
+    LNot,
+}
+
 // 抽象構文木
 #[derive(Debug, PartialEq)]
 pub enum Ast {
