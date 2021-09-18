@@ -7,13 +7,8 @@ use std::str::FromStr;
 use whiteye::backend::llvm::LLVMBackend;
 use whiteye::backend::{BackendType, BACKEND_TYPES};
 
-<<<<<<< HEAD
-use whiteye::ast::Ast;
-=======
->>>>>>> 9fe28ac (fix(backend llvm): add frontend)
 use whiteye::machine::Machine;
 use whiteye::parser::parse;
-use whiteye::value::Value;
 
 fn main() -> Result<()> {
     let app = App::new(crate_name!())

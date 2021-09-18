@@ -119,7 +119,7 @@ impl<'a, 'ctx> FunctionCodeGenerator<'a, 'ctx> {
 
     fn generate_value(&self, ast: Ast) -> BasicValueEnum<'ctx> {
         match ast {
-            Ast::Literal(value) => to_basic_value_enum(self.context, value),
+            Ast::Literal(value) => to_basic_value_enum(self.ty, value),
 
             Ast::Expr {
                 left,
@@ -159,7 +159,7 @@ impl<'a, 'ctx> FunctionCodeGenerator<'a, 'ctx> {
                 .generate_float_expr(left, operator, right)
                 .as_basic_value_enum(),
 
-            _ => unreachable!(),
+            _ => panic!(),
         }
     }
 
@@ -197,15 +197,16 @@ impl<'a, 'ctx> FunctionCodeGenerator<'a, 'ctx> {
     }
 }
 
-fn to_basic_value_enum(context: &Context, value: Value) -> BasicValueEnum {
+fn to_basic_value_enum<'ctx>(ty: &LLVMTypes<'ctx>, value: Value) -> BasicValueEnum<'ctx> {
     match value {
-        Value::Integer(v) => context
-            .i64_type() // TODO: Decide bit length
+        Value::Integer(v) => ty
+            .i64_type // TODO: Decide bit length
             .const_int(v.abs() as u64, v.is_positive())
             .as_basic_value_enum(),
-        Value::Float(v) => context
-            .f64_type() // TODO: Decide bit length
+        Value::Float(v) => ty
+            .f64_type // TODO: Decide bit length
             .const_float(v as f64)
             .as_basic_value_enum(),
+        Value::Bool(v) => ty.i8_type.const_int(v as u64, true).as_basic_value_enum(),
     }
 }
