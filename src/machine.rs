@@ -1,7 +1,11 @@
+use core::panic;
 use std::collections::HashMap;
+use std::convert::TryInto;
 use std::error::Error;
 
-use crate::ast::{AssignmentOpKind, Ast, ComparisonOpKind, ExprOpKind, UnaryOpKind, ValueType};
+use crate::ast::{
+    AssignmentOpKind, Ast, ComparisonOpKind, ExprOpKind, LogicalOpKind, UnaryOpKind, ValueType,
+};
 
 use crate::{builtin_functions, value::Value};
 
@@ -129,7 +133,7 @@ impl Machine {
             Ast::Monomial {
                 operator: UnaryOpKind::UMinus,
                 expr,
-            } => Value::from(-1) * self.eval_expression(*expr),
+            } => -self.eval_expression(*expr),
 
             Ast::ComparisonExpr {
                 left,
@@ -166,6 +170,38 @@ impl Machine {
                 operator: ComparisonOpKind::CLessEqual,
                 right,
             } => Value::from(self.eval_expression(*left) <= self.eval_expression(*right)),
+
+            Ast::LogicalExpr {
+                left,
+                operator: LogicalOpKind::LAnd,
+                right,
+            } => {
+                let left_value = match self.eval_expression(*left).try_into() {
+                    Ok(v) => v,
+                    Err(_) => panic!(),
+                };
+                let right_value = match self.eval_expression(*right).try_into() {
+                    Ok(v) => v,
+                    Err(_) => panic!(),
+                };
+                Value::from(left_value && right_value)
+            }
+
+            Ast::LogicalExpr {
+                left,
+                operator: LogicalOpKind::LOr,
+                right,
+            } => {
+                let left_value = match self.eval_expression(*left).try_into() {
+                    Ok(v) => v,
+                    Err(_) => panic!(),
+                };
+                let right_value = match self.eval_expression(*right).try_into() {
+                    Ok(v) => v,
+                    Err(_) => panic!(),
+                };
+                Value::from(left_value || right_value)
+            }
 
             _ => unreachable!(),
         }

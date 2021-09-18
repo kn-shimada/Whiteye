@@ -40,13 +40,11 @@ pub enum ComparisonOpKind {
     CLessEqual,
 }
 
-/*
 #[derive(Debug, PartialEq)]
 pub enum LogicalOpKind {
     LAnd,
     LOr,
 }
-*/
 
 #[derive(Debug, PartialEq)]
 pub enum Ast {
@@ -70,15 +68,14 @@ pub enum Ast {
         operator: ComparisonOpKind,
         right: Box<Ast>,
     },
-    /*
-        LogicalExpr {
-            left: Box<Ast>,
-            operator: LogicalOpKind,
-            right: Box<Ast>,
-        },
 
-        NotOp(Box<Ast>),
-    */
+    LogicalExpr {
+        left: Box<Ast>,
+        operator: LogicalOpKind,
+        right: Box<Ast>,
+    },
+
+    // NotOp(Box<Ast>),
     VariableDeclaration {
         name: String,
         value_type: ValueType,

@@ -1,19 +1,44 @@
-use nom::character::streaming::space0;
+use nom::bytes::complete::is_a;
 use nom::error::VerboseError;
+use nom::multi::many0;
+use nom::sequence::tuple;
 use nom::IResult;
-use nom::{bytes::complete::is_a, sequence::delimited};
 
-use crate::ast::{Ast, ComparisonOpKind};
+use crate::ast::{Ast, ComparisonOpKind, LogicalOpKind};
 
 use super::expression::parse_add_sub;
 
 pub fn parse_conditional_expr(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
-    parse_comparison_expr(input)
+    parse_and_or(input)
+}
+
+fn parse_and_or(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
+    let (input, left_expr) = parse_comparison_expr(input)?;
+    let (input, exprs) = many0(tuple((is_a("&|"), parse_comparison_expr)))(input)?;
+    Ok((input, parse_logical_expr(left_expr, exprs)))
+}
+
+fn parse_logical_expr(left_expr: Ast, exprs: Vec<(&str, Ast)>) -> Ast {
+    exprs
+        .into_iter()
+        .fold(left_expr, |left_expr, exprs| Ast::LogicalExpr {
+            left: Box::new(left_expr),
+            operator: parse_logical_oprator(exprs.0),
+            right: Box::new(exprs.1),
+        })
+}
+
+fn parse_logical_oprator(input: &str) -> LogicalOpKind {
+    match input {
+        "&&" => LogicalOpKind::LAnd,
+        "||" => LogicalOpKind::LOr,
+        _ => panic!("Unknown Operation"),
+    }
 }
 
 fn parse_comparison_expr(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
     let (input, left_expr) = parse_add_sub(input)?;
-    let (input, comparison_op) = delimited(space0, parse_comparison_operator, space0)(input)?;
+    let (input, comparison_op) = parse_comparison_operator(input)?;
     let (input, right_expr) = parse_add_sub(input)?;
     Ok((
         input,

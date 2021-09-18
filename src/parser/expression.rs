@@ -14,16 +14,16 @@ use crate::value::Value;
 pub fn parse_add_sub(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
     let (input, left_expr) = parse_mul_div(input)?;
     let (input, exprs) = many0(tuple((one_of("+-"), parse_mul_div)))(input)?;
-    Ok((input, parse_expr(left_expr, exprs)))
+    Ok((input, parse_math_expr(left_expr, exprs)))
 }
 
 fn parse_mul_div(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
     let (input, left_expr) = parse_unary(input)?;
     let (input, exprs) = many0(tuple((one_of("*/"), parse_mul_div)))(input)?;
-    Ok((input, parse_expr(left_expr, exprs)))
+    Ok((input, parse_math_expr(left_expr, exprs)))
 }
 
-fn parse_expr(left_expr: Ast, exprs: Vec<(char, Ast)>) -> Ast {
+fn parse_math_expr(left_expr: Ast, exprs: Vec<(char, Ast)>) -> Ast {
     exprs
         .into_iter()
         .fold(left_expr, |left_expr, exprs| Ast::Expr {
@@ -91,7 +91,6 @@ fn parse_integer(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
 }
 
 fn parse_float(input: &str) -> IResult<&str, Ast, VerboseError<&str>> {
-    // check float
     let (check_input, _) = digit1(input)?;
     let _ = tag(".")(check_input)?;
 

@@ -1,10 +1,9 @@
 use std::{
-    convert::From,
+    convert::{From, TryInto},
     fmt,
-    ops::{Add, Div, Mul, Sub},
+    ops::{Add, Div, Mul, Neg, Sub},
 };
 
-// 値
 #[derive(Debug, PartialEq)]
 pub enum Value {
     Integer(isize),
@@ -128,6 +127,18 @@ impl Div for Value {
     }
 }
 
+impl Neg for Value {
+    type Output = Value;
+
+    fn neg(self) -> Self::Output {
+        match self {
+            Value::Integer(v) => Value::Integer(-v),
+            Value::Float(v) => Value::Float(-v),
+            _ => panic!(),
+        }
+    }
+}
+
 impl PartialOrd for Value {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         match self {
@@ -141,6 +152,17 @@ impl PartialOrd for Value {
                 Value::Float(v) => v_lhs.partial_cmp(v),
                 _ => panic!(),
             },
+            _ => panic!(),
+        }
+    }
+}
+
+impl TryInto<bool> for Value {
+    type Error = &'static str;
+
+    fn try_into(self) -> Result<bool, Self::Error> {
+        match self {
+            Value::Bool(v) => Ok(v),
             _ => panic!(),
         }
     }
