@@ -1,5 +1,4 @@
-use nom::bytes::complete::is_a;
-use nom::bytes::complete::tag;
+use nom::bytes::complete::{is_a, tag};
 use nom::error::VerboseError;
 use nom::sequence::delimited;
 use nom::IResult;

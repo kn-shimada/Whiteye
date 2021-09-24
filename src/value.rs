@@ -4,7 +4,8 @@ use std::{
     ops::{Add, Div, Mul, Neg, Sub},
 };
 
-#[derive(Debug, PartialEq)]
+// 値
+#[derive(Debug, PartialEq, Clone)]
 pub enum Value {
     Integer(isize),
     Float(f64),

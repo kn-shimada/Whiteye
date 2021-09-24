@@ -1,13 +1,14 @@
 use crate::value::Value;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum ValueType {
     Integer,
     Float,
     Bool,
 }
 
-#[derive(Debug, PartialEq)]
+// 演算子
+#[derive(Debug, PartialEq, Clone)]
 pub enum ExprOpKind {
     EAdd,
     ESub,
@@ -15,13 +16,15 @@ pub enum ExprOpKind {
     EDiv,
 }
 
-#[derive(Debug, PartialEq)]
+// 単項演算子
+#[derive(Debug, PartialEq, Clone)]
 pub enum UnaryOpKind {
     UPlus,
     UMinus,
 }
 
-#[derive(Debug, PartialEq)]
+// 代入演算子
+#[derive(Debug, PartialEq, Clone)]
 pub enum AssignmentOpKind {
     AEqual,
     AAdd,
@@ -30,7 +33,7 @@ pub enum AssignmentOpKind {
     ADiv,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum ComparisonOpKind {
     CEqual,
     CNot,
@@ -46,7 +49,8 @@ pub enum LogicalOpKind {
     LOr,
 }
 
-#[derive(Debug, PartialEq)]
+// 抽象構文木
+#[derive(Debug, PartialEq, Clone)]
 pub enum Ast {
     Literal(Value),
 
